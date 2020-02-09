@@ -10,11 +10,11 @@
 
 class Model {
 private:
-    std::vector<Color> vertex;
+    std::vector<Point> vertex;
 public:
     Model(const char *filename);
     int nbvertex();
-    Color &point(int i);
+    Point &point(int i);
 };
 
 

@@ -5,10 +5,12 @@
 #include "data.hpp"
 #include "model.h"
 
-#define WIDTH 10
-#define HEIGHT 10
+#define WIDTH 800
+#define HEIGHT 800
 
-void writepgm(const unsigned char* image, const char* filename){
+using namespace std;
+
+void writeppm(const unsigned char* image, const char* filename){
     int i;
     FILE* F = fopen(filename,"w");
     if (F) {
@@ -21,27 +23,33 @@ void writepgm(const unsigned char* image, const char* filename){
     }
 }
 
-void render() {
+bool isPoint() {
+	
+}
+
+void render(Model m) {
+	std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
     Color c;
-    //c.tab= {127,127,127};
-    c.tab[0] = 127;
-    c.tab[1] = 127;
-    c.tab[2] = 127;
-    std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
+    c = {127, 54, 98};
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
         for (size_t j = 0; j<3; j++) {
-            pixmap[i*3+j] = (unsigned char)c.tab[j];
+            pixmap[i*3+j] = (unsigned char)c.get(j);
         }
     }
-    writepgm(pixmap.data(), "test.ppm");
+	
+	for (int i = 0; i < m.nbvertex(); i++) {
+		Point p = m.point(i);
+		cout << "x = " + to_string(p.x) + "; y = " + to_string(p.y) + "; z = " + to_string(p.z) << endl;
+	}
+    writeppm(pixmap.data(), "test.ppm");
 }
 
 int main(int argc, char** argv) {
-    std::cout << "Usage: " << argv[0] << " model.obj tangentnormals.jpg diffuse.jpg specular.jpg" << std::endl;
-    std::string file_obj ("../lib/obj/diablo3_pose/diablo3_pose.obj");
-    std::string file_nm  ("../lib/obj/diablo3_pose/diablo3_pose_nm_tangent.tga");
-    std::string file_diff("../lib/obj/diablo3_pose/diablo3_pose_diffuse.tga");
-    std::string file_spec("../lib/obj/diablo3_pose/diablo3_pose_spec.tga");
+    cout << "Usage: " << argv[0] << " model.obj tangentnormals.jpg diffuse.jpg specular.jpg" << endl;
+    string file_obj ("../lib/obj/diablo3_pose/diablo3_pose.obj");
+    string file_nm  ("../lib/obj/diablo3_pose/diablo3_pose_nm_tangent.tga");
+    string file_diff("../lib/obj/diablo3_pose/diablo3_pose_diffuse.tga");
+    string file_spec("../lib/obj/diablo3_pose/diablo3_pose_spec.tga");
     if (5==argc) {
         file_obj  = std::string(argv[1]);
         file_nm   = std::string(argv[2]);
@@ -49,7 +57,7 @@ int main(int argc, char** argv) {
         file_spec = std::string(argv[4]);
     }
     Model model(file_obj.c_str());
-    std::cout << "Number of points in the model: " << model.nbvertex() << std::endl;
-    render();
+    cout << "Number of points in the model: " << model.nbvertex() << endl;
+    render(model);
     return 0;
 }

@@ -21,8 +21,8 @@ Model::Model(const char *filename) : vertex(){
         char trash;
         if (!line.compare(0, 2, "v ")) {
             cur >> trash;
-            Color v;
-            for (int i=0;i<3;i++) cur >> v.tab[i];
+            Point v;
+            for (int i=0;i<3;i++) cur >> v.dim[i];
             vertex.push_back(v);
         }
     }
@@ -32,7 +32,7 @@ int Model::nbvertex() {
     return (int)vertex.size();
 }
 
-Color &Model::point(int i) {
+Point &Model::point(int i) {
     assert(i>=0 && i<nbvertex());
     return vertex[i];
 }
