@@ -19,4 +19,10 @@ typedef struct {
       float x = dim[0], y = dim[1], z = dim[2];
 } Point;
 
+typedef struct {
+    int dim[3];
+public:
+    int x = dim[0], y = dim[1], z = dim[2];
+} Pointi;
+
 #endif

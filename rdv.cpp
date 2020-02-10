@@ -24,7 +24,7 @@ void writeppm(const unsigned char* image, const char* filename){
 }
 
 bool isPoint() {
-	
+	return true;
 }
 
 void render(Model m) {
@@ -39,7 +39,7 @@ void render(Model m) {
 	
 	for (int i = 0; i < m.nbvertex(); i++) {
 		Point p = m.point(i);
-		cout << "x = " + to_string(p.x) + "; y = " + to_string(p.y) + "; z = " + to_string(p.z) << endl;
+		//cout << "x = " + to_string(p.x) + "; y = " + to_string(p.y) + "; z = " + to_string(p.z) << endl;
 	}
     writeppm(pixmap.data(), "test.ppm");
 }
@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
         file_spec = std::string(argv[4]);
     }
     Model model(file_obj.c_str());
-    cout << "Number of points in the model: " << model.nbvertex() << endl;
+    cout << "Number of points in the model: " << model.nbvertex() << " Number of faces in the model " << model.nbfaces() << endl;
     render(model);
     return 0;
 }
