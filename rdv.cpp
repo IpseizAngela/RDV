@@ -10,38 +10,54 @@
 
 using namespace std;
 
-void writeppm(const unsigned char* image, const char* filename){
-    int i;
+ void writeppm(unsigned char* image, const char* filename){
+    int i, j;
     FILE* F = fopen(filename,"w");
     if (F) {
         fprintf(F, "P3\n%d %d\n255\n", WIDTH, HEIGHT);
         unsigned char r, v, b;
         for (i = 0; i < WIDTH * HEIGHT; i++) {
-            fprintf(F, "%d %d %d ", image[i*3 + 0], image[i*3 + 1], image[i*3 + 2]);
+            for (j = 0; j < 3; j++) {
+                fprintf(F, "%d %d %d ", image[i*3 + 0], image[i*3 + 1], image[i*3 + 2]);
+            }
         }
         fclose(F);
     }
 }
 
-bool isPoint() {
-	return true;
-}
+
 
 void render(Model m) {
-	std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
-    Color c;
-    c = {127, 54, 98};
+    std::vector<Color> pixels(WIDTH*HEIGHT*3);
+    Color black;
+    black = {0, 0, 0};
+    Color white = {255,255,255};
+    for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
+        pixels[i] = black;
+    }
+    
+    Point pt;
+    int col, lig;
+    float h = HEIGHT / 2.;
+    float w = WIDTH / 2.;
+    for (int i = 0; i < m.nbvertex(); i++) {
+        pt = m.point(i);
+        
+        if (pt.dim[0] < 0) col = (int) (w - abs(pt.dim[0]*w));
+        else col = (int) (w + pt.dim[0]*w);
+        
+        if (pt.dim[1] < 0) lig = (int) (h + abs(pt.dim[1]*h));
+        else lig = (int) (h - pt.dim[1]*h);
+        
+        pixels[lig*WIDTH + col] = white;
+    }
+    std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
         for (size_t j = 0; j<3; j++) {
-            pixmap[i*3+j] = (unsigned char)c.get(j);
+            pixmap[i*3+j] = (unsigned char)/*(255 * std::max(0.f, std::min(1.f,*/ pixels[i].get(j);//)));
         }
     }
-	
-	for (int i = 0; i < m.nbvertex(); i++) {
-		Point p = m.point(i);
-		//cout << "x = " + to_string(p.x) + "; y = " + to_string(p.y) + "; z = " + to_string(p.z) << endl;
-	}
-    writeppm(pixmap.data(), "test.ppm");
+    writeppm(pixmap.data(), "test1.ppm");
 }
 
 int main(int argc, char** argv) {
