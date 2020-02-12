@@ -28,33 +28,33 @@ using namespace std;
 
 
 void render(Model m) {
-    std::vector<Color> pixels(WIDTH*HEIGHT*3);
-    Color black;
+    std::vector<Vec3f> pixels(WIDTH*HEIGHT*3);
+    Vec3f black;
     black = {0, 0, 0};
-    Color white = {255,255,255};
+    Vec3f white = {255,255,255};
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
         pixels[i] = black;
     }
 
-    Point pt;
+    Vec3f pt;
     int col, lig;
     float h = HEIGHT / 2.;
     float w = WIDTH / 2.;
     for (int i = 0; i < m.nbvertex(); i++) {
         pt = m.point(i);
 
-        if (pt.dim[0] < 0) col = (int) (w - abs(pt.dim[0]*w));
-        else col = (int) (w + pt.dim[0]*w);
+        if (pt[0] < 0) col = (int) (w - abs(pt[0]*w));
+        else col = (int) (w + pt[0]*w);
 
-        if (pt.dim[1] < 0) lig = (int) (h + abs(pt.dim[1]*h));
-        else lig = (int) (h - pt.dim[1]*h);
+        if (pt[1] < 0) lig = (int) (h + abs(pt[1]*h));
+        else lig = (int) (h - pt[1]*h);
 
         pixels[lig*WIDTH + col] = white;
     }
     std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
         for (size_t j = 0; j<3; j++) {
-            pixmap[i*3+j] = (unsigned char)/*(255 * std::max(0.f, std::min(1.f,*/ pixels[i].get(j);//)));
+            pixmap[i*3+j] = (unsigned char)/*(255 * std::max(0.f, std::min(1.f,*/ pixels[i][j];//)));
         }
     }
     writeppm(pixmap.data(), "test1.ppm");
