@@ -12,8 +12,6 @@ using namespace std;
 
 void segment(Pointi A, Pointi B, Color coul, std::vector<Color> &pixels)
 {
-	cout << "A = " << A.x << "; " << A.y << endl;
-	cout << "B = " << B.x << "; " << B.y << endl;
     int dlig = B.y - A.y;
     int dcol = B.x - A.x;
     int absdcol = abs(dcol);
@@ -58,6 +56,12 @@ void segment(Pointi A, Pointi B, Color coul, std::vector<Color> &pixels)
     }
 }
 
+void triangle(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pixels) {
+	segment(A, B, c, pixels);
+	segment(B, C, c, pixels);
+	segment(A, C, c, pixels);
+}
+
 void writeppm(unsigned char* image, const char* filename){
     int i, j;
     FILE* F = fopen(filename,"w");
@@ -65,9 +69,7 @@ void writeppm(unsigned char* image, const char* filename){
         fprintf(F, "P3\n%d %d\n255\n", WIDTH, HEIGHT);
         unsigned char r, v, b;
         for (i = 0; i < WIDTH * HEIGHT; i++) {
-            //for (j = 0; j < 3; j++) {
-                fprintf(F, "%d %d %d ", image[i*3 + 0], image[i*3 + 1], image[i*3 + 2]);
-            //}
+            fprintf(F, "%d %d %d ", image[i*3 + 0], image[i*3 + 1], image[i*3 + 2]);
         }
         fclose(F);
     }
@@ -77,9 +79,11 @@ void writeppm(unsigned char* image, const char* filename){
 
 void render(Model m) {
     std::vector<Color> pixels(WIDTH*HEIGHT*3);
-    Color black;
-    black = {0, 0, 0, 0};
+    Color black = {0, 0, 0, 0};
     Color white = {255,255 ,255, 0};
+    Color vert = {0,255 ,0, 0};
+    Color bleu = {0,0 ,255, 0};
+    Color rouge = {255,0, 0, 0};
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
         pixels[i] = black;
     }
@@ -99,13 +103,19 @@ void render(Model m) {
         
         pixels[lig*WIDTH + col] = white;
     }*/
-	Pointi p1 = {10,10,10};
-	Pointi p2 = {700,700,0};
-	segment(p1, p2, white, pixels);
+	Pointi p1 = {300,100,10};
+	Pointi p2 = {50,300,0};	
+	Pointi p3 = {200,400,10};
+	Pointi p4 = {400,200,0};
+	Pointi p5 = {600,200,0};
+	Pointi p6 = {300,400,0};
+	Pointi p7 = {400,220,0};
+	Pointi p8 = {400,490,0};
+	Pointi p9 = {300,650,0};
 	
-	Pointi p3 = {600,10,10};
-	Pointi p4 = {450,700,0};
-	segment(p3, p4, white, pixels);
+	triangle(p1, p2, p3, rouge, pixels);
+	triangle(p4, p5, p6, vert, pixels);
+	triangle(p7, p8, p9, bleu, pixels);
     
     
     std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
