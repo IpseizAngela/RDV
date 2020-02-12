@@ -19,7 +19,7 @@ public:
     int nbfaces();
     Point &point(int i);
 	std::vector<Pointi> face(int i);
-    Pointi vert(int fi, int li);
+    int vert(int fi, int li);
 };
 
 

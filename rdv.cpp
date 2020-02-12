@@ -57,9 +57,65 @@ void segment(Pointi A, Pointi B, Color coul, std::vector<Color> &pixels)
 }
 
 void triangle(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pixels) {
-	segment(A, B, c, pixels);
-	segment(B, C, c, pixels);
-	segment(A, C, c, pixels);
+    segment(A, B, c, pixels);
+    segment(B, C, c, pixels);
+    segment(A, C, c, pixels);
+}
+
+void segment(Point A, Point B, Color coul, std::vector<Color> &pixels)
+{
+    int dlig = B.y - A.y;
+    int dcol = B.x - A.x;
+    int absdcol = abs(dcol);
+    int absdlig = abs(dlig);
+    int col = A.x;
+    int lig = A.y;
+    int sensLig = 1;
+    int sensCol = 1;
+    int cumul;
+
+    if (dcol < 0) {
+        sensCol = -1;
+    }
+    if (dlig < 0) {
+        sensLig = -1;
+    }
+
+    if (absdcol >= absdlig) {
+        cumul = absdcol;
+        while (col != B.x + sensCol) {
+            // cout << "lig = " << lig << "; col = " << col << endl;
+            cout << lig*WIDTH + col << endl;
+            pixels[lig*WIDTH + col] = coul;
+            cout << "--" << endl;
+            cumul = cumul + (2*absdlig);
+            if (cumul >= 2*absdcol) {
+                lig = lig + sensLig;
+                cumul = cumul - (2*absdcol);
+            }
+            col = col + sensCol;
+        }
+    } else {
+        cumul = absdlig;
+        while (lig != B.y + sensLig) {
+            // cout << "lig = " << lig << "; col = " << col << endl;
+            pixels[lig*WIDTH + col ] = coul;
+            cumul = cumul + (2*absdcol);
+            if (cumul >= 2*absdlig) {
+                col = col + sensCol;
+                cumul = cumul - (2*absdlig);
+            }
+            lig = lig + sensLig;
+        }
+    }
+}
+
+void triangle(Point A, Point B, Point C, Color c, std::vector<Color> &pixels) {
+    cout << "1" <<endl;
+    segment(A, B, c, pixels);
+    segment(B, C, c, pixels);
+    segment(A, C, c, pixels);
+    cout << "4" <<endl;
 }
 
 void writeppm(unsigned char* image, const char* filename){
@@ -103,6 +159,8 @@ void render(Model m) {
         
         pixels[lig*WIDTH + col] = white;
     }*/
+
+    /*
 	Pointi p1 = {300,100,10};
 	Pointi p2 = {50,300,0};	
 	Pointi p3 = {200,400,10};
@@ -115,8 +173,14 @@ void render(Model m) {
 	
 	triangle(p1, p2, p3, rouge, pixels);
 	triangle(p4, p5, p6, vert, pixels);
-	triangle(p7, p8, p9, bleu, pixels);
-    
+	triangle(p7, p8, p9, bleu, pixels);*/
+
+    for (int i = 0; i < m.nbfaces(); ++i) {
+        Point v0 = m.point(m.vert(i, 0));
+        Point v1 = m.point(m.vert(i, 1));
+        Point v2 = m.point(m.vert(i, 2));
+        triangle(v0, v1, v2, bleu, pixels);
+    }
     
     std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
@@ -124,6 +188,7 @@ void render(Model m) {
             pixmap[i*3+j] = (unsigned char)/*(255 * std::max(0.f, std::min(1.f,*/ pixels[i][j];//)));
         }
     }
+
     writeppm(pixmap.data(), "test1.ppm");
 }
 
