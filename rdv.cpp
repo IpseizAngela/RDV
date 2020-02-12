@@ -29,16 +29,16 @@ bool isPoint() {
 
 void render(Model m) {
 	std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
-    Color c;
+    Vec3f c;
     c = {127, 54, 98};
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
         for (size_t j = 0; j<3; j++) {
-            pixmap[i*3+j] = (unsigned char)c.get(j);
+            pixmap[i*3+j] = (unsigned char)c[j];
         }
     }
 	
 	for (int i = 0; i < m.nbvertex(); i++) {
-		Point p = m.point(i);
+        Vec3f p = m.point(i);
 		//cout << "x = " + to_string(p.x) + "; y = " + to_string(p.y) + "; z = " + to_string(p.z) << endl;
 	}
     writeppm(pixmap.data(), "test.ppm");

@@ -21,12 +21,12 @@ Model::Model(const char *filename) : vertex(), faces(){
         char trash;
         if (!line.compare(0, 2, "v ")) {
             cur >> trash;
-            Point v;
-            for (int i=0;i<3;i++) cur >> v.dim[i];
+            Vec3f v;
+            for (int i=0;i<3;i++) cur >> v[i];
             vertex.push_back(v);
         }else if (!line.compare(0, 2, "f ")) {
-            std::vector<Pointi> f;
-            Pointi tmp;
+            std::vector<Vec3i> f;
+            Vec3i tmp;
             cur >> trash;
             while (cur >> tmp.x >> trash >> tmp.y >> trash >> tmp.z) {
                 //for (int i=0; i<3; i++) tmp[i]--; // in wavefront obj all indices start at 1, not zero
@@ -49,7 +49,7 @@ int Model::nbfaces() {
     return (int)faces.size();
 }
 
-Point &Model::point(int i) {
+Vec3f &Model::point(int i) {
     assert(i>=0 && i<nbvertex());
     return vertex[i];
 }
