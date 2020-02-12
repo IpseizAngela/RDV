@@ -10,16 +10,17 @@
 
 using namespace std;
 
- void writeppm(unsigned char* image, const char* filename){
+
+void writeppm(unsigned char* image, const char* filename){
     int i, j;
     FILE* F = fopen(filename,"w");
     if (F) {
         fprintf(F, "P3\n%d %d\n255\n", WIDTH, HEIGHT);
         unsigned char r, v, b;
         for (i = 0; i < WIDTH * HEIGHT; i++) {
-            for (j = 0; j < 3; j++) {
+            //for (j = 0; j < 3; j++) {
                 fprintf(F, "%d %d %d ", image[i*3 + 0], image[i*3 + 1], image[i*3 + 2]);
-            }
+            //}
         }
         fclose(F);
     }
@@ -28,29 +29,31 @@ using namespace std;
 
 
 void render(Model m) {
-    std::vector<Vec3f> pixels(WIDTH*HEIGHT*3);
-    Vec3f black;
-    black = {0, 0, 0};
-    Vec3f white = {255,255,255};
+    std::vector<Color> pixels(WIDTH*HEIGHT*3);
+    Color black;
+    black = {0, 0, 0, 0};
+    Color white = {255,255 ,255, 0};
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
         pixels[i] = black;
     }
-
-    Vec3f pt;
+    
+    Point pt;
     int col, lig;
     float h = HEIGHT / 2.;
     float w = WIDTH / 2.;
     for (int i = 0; i < m.nbvertex(); i++) {
         pt = m.point(i);
-
-        if (pt[0] < 0) col = (int) (w - abs(pt[0]*w));
-        else col = (int) (w + pt[0]*w);
-
-        if (pt[1] < 0) lig = (int) (h + abs(pt[1]*h));
-        else lig = (int) (h - pt[1]*h);
-
+        
+        if (pt.x < 0) col = (int) (w - abs(pt.x*w));
+        else col = (int) (w + pt.x*w);
+        
+        if (pt.y < 0) lig = (int) (h + abs(pt.y*h));
+        else lig = (int) (h - pt.y*h);
+        
         pixels[lig*WIDTH + col] = white;
     }
+    
+    
     std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
         for (size_t j = 0; j<3; j++) {
