@@ -10,6 +10,53 @@
 
 using namespace std;
 
+void segment(Pointi A, Pointi B, Color coul, std::vector<Color> &pixels)
+{
+	cout << "A = " << A.x << "; " << A.y << endl;
+	cout << "B = " << B.x << "; " << B.y << endl;
+    int dlig = B.y - A.y;
+    int dcol = B.x - A.x;
+    int absdcol = abs(dcol);
+    int absdlig = abs(dlig);
+    int col = A.x;
+    int lig = A.y;
+    int sensLig = 1;
+    int sensCol = 1;
+    int cumul;
+
+    if (dcol < 0) {
+        sensCol = -1;
+    }
+    if (dlig < 0) {
+        sensLig = -1;
+    }
+
+    if (absdcol >= absdlig) {
+        cumul = absdcol;
+        while (col != B.x + sensCol) {
+			// cout << "lig = " << lig << "; col = " << col << endl;
+            pixels[lig*WIDTH + col] = coul;
+            cumul = cumul + (2*absdlig);
+            if (cumul >= 2*absdcol) {
+                lig = lig + sensLig;
+                cumul = cumul - (2*absdcol);
+            }
+            col = col + sensCol;
+        }
+    } else {
+        cumul = absdlig;
+        while (lig != B.y + sensLig) {
+			// cout << "lig = " << lig << "; col = " << col << endl;
+            pixels[lig*WIDTH + col ] = coul;
+            cumul = cumul + (2*absdcol);
+            if (cumul >= 2*absdlig) {
+                col = col + sensCol;
+                cumul = cumul - (2*absdlig);
+            }
+            lig = lig + sensLig;
+        }
+    }
+}
 
 void writeppm(unsigned char* image, const char* filename){
     int i, j;
@@ -37,7 +84,7 @@ void render(Model m) {
         pixels[i] = black;
     }
     
-    Point pt;
+    /*Point pt;
     int col, lig;
     float h = HEIGHT / 2.;
     float w = WIDTH / 2.;
@@ -51,7 +98,14 @@ void render(Model m) {
         else lig = (int) (h - pt.y*h);
         
         pixels[lig*WIDTH + col] = white;
-    }
+    }*/
+	Pointi p1 = {10,10,10};
+	Pointi p2 = {700,700,0};
+	segment(p1, p2, white, pixels);
+	
+	Pointi p3 = {600,10,10};
+	Pointi p4 = {450,700,0};
+	segment(p3, p4, white, pixels);
     
     
     std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
