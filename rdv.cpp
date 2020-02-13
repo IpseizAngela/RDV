@@ -60,6 +60,110 @@ void triangle(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pixels)
 	segment(A, C, c, pixels);
 }
 
+
+void trianglePlein(Pointi A, Pointi B, Pointi C, Color coul, std::vector<Color> &pixels) {
+  Pointi tmp;
+  /*Couleur coulT;
+  Couleur coulA = couls[0];
+  Couleur coulB = couls[1];
+  Couleur coulC = couls[2];*/
+
+  if (A.y > B.y) {
+    tmp = A;
+    A = B;
+    B = tmp;
+    /*coulT = coulA;
+    coulA = coulB;
+    coulB = coulT;*/
+  }
+  if (B.y > C.y) {
+    tmp = C;
+    C = B;
+    B = tmp;
+    /*coulT = coulC;
+    coulC = coulB;
+    coulB = coulT;*/
+  }
+  if (A.y > B.y) {
+    tmp = A;
+    A = B;
+    B = tmp;
+    /*coulT = coulA;
+    coulA = coulB;
+    coulB = coulT;*/
+  }
+
+  Pointi AB = {B.x - A.x, B.y - A.y, 0};
+  Pointi AC = {C.x - A.x, C.y - A.y, 0};
+  Pointi BC = {C.x - B.x, C.y - B.y, 0};
+
+  Pointi pAB ;//= PointImage();
+  Pointi pAC ;//= PointImage();
+
+  /*double alpha;
+  double beta;
+  Couleur coulG;
+  Couleur coulD;*/
+
+  if (AB.y > 0) {
+    for (int l=0; l < AB.y; l++) {
+      pAB.x = A.x + AB.x * l / AB.y;
+      pAB.y = A.y + l;
+      pAC.x = A.x + AC.x * l / AC.y;
+      pAC.y = pAB.y;
+
+      /*alpha = (double)(pAB.lig - A.lig) / (double)AB.lig;
+      beta = (double)(pAC.lig - A.lig) / (double)AC.lig;
+
+      coulG.R = (1-alpha)*coulA.R + alpha * coulB.R;
+      coulG.V = (1-alpha)*coulA.V + alpha * coulB.V;
+      coulG.B = (1-alpha)*coulA.B + alpha * coulB.B;
+      coulG.A = (1-alpha)*coulA.A + alpha * coulB.A;
+
+      coulD.R = (1-beta)*coulA.R + beta * coulC.R;
+      coulD.V = (1-beta)*coulA.V + beta * coulC.V;
+      coulD.B = (1-beta)*coulA.B + beta * coulC.B;
+      coulD.A = (1-beta)*coulA.A + beta * coulC.A;*/
+
+      //Segment(pAB, pAC, coulG, coulD,image);
+      segment(pAB, pAC, coul, pixels);
+    }
+  } else {
+    //Segment(A, B, coulA, coulB, image);
+    segment(A, B, coul, pixels);
+  }
+
+  Pointi pBC ;//= PointImage();
+    if (BC.y > 0) {
+		for (int l = AB.y; l < AC.y; l++) {
+			pBC.x = B.x + BC.x * (l-AB.y) / BC.y;
+			pBC.y = A.y + l;
+			pAC.x = A.x + AC.x * l / AC.y;
+			pAC.y = pBC.y;
+
+			/*alpha = (double)(pBC.lig - B.lig) / (double)BC.lig;
+			beta = (double)(pAC.lig - A.lig)/ (double)AC.lig;
+
+			coulG.R = (1-alpha)*coulB.R + alpha * coulC.R;
+			coulG.V = (1-alpha)*coulB.V + alpha * coulC.V;
+			coulG.B = (1-alpha)*coulB.B + alpha * coulC.B;
+			coulG.A = (1-alpha)*coulB.A + alpha * coulC.A;
+
+			coulD.R = (1-beta)*coulA.R + beta * coulC.R;
+			coulD.V = (1-beta)*coulA.V + beta * coulC.V;
+			coulD.B = (1-beta)*coulA.B + beta * coulC.B;
+			coulD.A = (1-beta)*coulA.A + beta * coulC.A;*/
+
+			segment(pBC, pAC, coul, pixels);
+		//Segment(pBC, pAC, coulG, coulD, image);
+		}
+	} else {
+		//Segment(B, C, coulB, coulC, image);
+		segment(B, C, coul, pixels);
+    }
+}
+
+
 void writeppm(unsigned char* image, const char* filename){
     int i, j;
     FILE* F = fopen(filename,"w");
@@ -97,8 +201,14 @@ void render(Model m) {
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
         pixels[i] = black;
     }
+	
+	/*for (int i = 0; i < m.nbvertex(); i++) {
+		Point p = m.point(i);
+		Pointi pi = pointToPointi(p);
+		pixels[pi.y*WIDTH + pi.x] = white;
+	}*/
     
-	/*Pointi p1 = {300,100,10};
+	Pointi p1 = {300,100,10};
 	Pointi p2 = {50,300,0};	
 	Pointi p3 = {200,400,10};
 	Pointi p4 = {400,200,0};
@@ -108,11 +218,11 @@ void render(Model m) {
 	Pointi p8 = {400,490,0};
 	Pointi p9 = {300,650,0};
 	
-	triangle(p1, p2, p3, rouge, pixels);
-	triangle(p4, p5, p6, vert, pixels);
-	triangle(p7, p8, p9, bleu, pixels);*/
+	trianglePlein(p1, p2, p3, rouge, pixels);
+	trianglePlein(p4, p5, p6, vert, pixels);
+	trianglePlein(p7, p8, p9, bleu, pixels);
 	
-	for (int nface = 0; nface < m.nbfaces(); nface++) {
+	/*for (int nface = 0; nface < m.nbfaces(); nface++) {
 		Point p1 = m.point(m.vert(nface, 0));
 		Point p2 = m.point(m.vert(nface, 1));
 		Point p3 = m.point(m.vert(nface, 2));
@@ -122,7 +232,7 @@ void render(Model m) {
 		Pointi p3i = pointToPointi(p3);
 		
 		triangle(p1i, p2i, p3i, white, pixels);
-	}
+	}*/
     
     
     std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
