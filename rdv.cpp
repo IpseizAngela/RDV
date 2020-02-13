@@ -62,105 +62,51 @@ void triangle(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pixels)
 
 
 void trianglePlein(Pointi A, Pointi B, Pointi C, Color coul, std::vector<Color> &pixels) {
-  Pointi tmp;
-  /*Couleur coulT;
-  Couleur coulA = couls[0];
-  Couleur coulB = couls[1];
-  Couleur coulC = couls[2];*/
+	Pointi tmp;
 
-  if (A.y > B.y) {
-    tmp = A;
-    A = B;
-    B = tmp;
-    /*coulT = coulA;
-    coulA = coulB;
-    coulB = coulT;*/
-  }
-  if (B.y > C.y) {
-    tmp = C;
-    C = B;
-    B = tmp;
-    /*coulT = coulC;
-    coulC = coulB;
-    coulB = coulT;*/
-  }
-  if (A.y > B.y) {
-    tmp = A;
-    A = B;
-    B = tmp;
-    /*coulT = coulA;
-    coulA = coulB;
-    coulB = coulT;*/
-  }
+	if (A.y > B.y) {
+		tmp = A; A = B; B = tmp;
+	}
+	if (B.y > C.y) {
+		tmp = C; C = B; B = tmp;
+	}
+	if (A.y > B.y) {
+		tmp = A; A = B; B = tmp;
+	}
 
-  Pointi AB = {B.x - A.x, B.y - A.y, 0};
-  Pointi AC = {C.x - A.x, C.y - A.y, 0};
-  Pointi BC = {C.x - B.x, C.y - B.y, 0};
+	Pointi AB = {B.x - A.x, B.y - A.y, 0};
+	Pointi AC = {C.x - A.x, C.y - A.y, 0};
+	Pointi BC = {C.x - B.x, C.y - B.y, 0};
 
-  Pointi pAB ;//= PointImage();
-  Pointi pAC ;//= PointImage();
+	Pointi pAB ;
+	Pointi pAC ;
 
-  /*double alpha;
-  double beta;
-  Couleur coulG;
-  Couleur coulD;*/
+	if (AB.y > 0) {
+		for (int l=0; l < AB.y; l++) {
+			pAB.x = A.x + AB.x * l / AB.y;
+			pAB.y = A.y + l;
+			pAC.x = A.x + AC.x * l / AC.y;
+			pAC.y = pAB.y;
 
-  if (AB.y > 0) {
-    for (int l=0; l < AB.y; l++) {
-      pAB.x = A.x + AB.x * l / AB.y;
-      pAB.y = A.y + l;
-      pAC.x = A.x + AC.x * l / AC.y;
-      pAC.y = pAB.y;
+			segment(pAB, pAC, coul, pixels);
+		}
+	} else {
+		segment(A, B, coul, pixels);
+	}
 
-      /*alpha = (double)(pAB.lig - A.lig) / (double)AB.lig;
-      beta = (double)(pAC.lig - A.lig) / (double)AC.lig;
-
-      coulG.R = (1-alpha)*coulA.R + alpha * coulB.R;
-      coulG.V = (1-alpha)*coulA.V + alpha * coulB.V;
-      coulG.B = (1-alpha)*coulA.B + alpha * coulB.B;
-      coulG.A = (1-alpha)*coulA.A + alpha * coulB.A;
-
-      coulD.R = (1-beta)*coulA.R + beta * coulC.R;
-      coulD.V = (1-beta)*coulA.V + beta * coulC.V;
-      coulD.B = (1-beta)*coulA.B + beta * coulC.B;
-      coulD.A = (1-beta)*coulA.A + beta * coulC.A;*/
-
-      //Segment(pAB, pAC, coulG, coulD,image);
-      segment(pAB, pAC, coul, pixels);
-    }
-  } else {
-    //Segment(A, B, coulA, coulB, image);
-    segment(A, B, coul, pixels);
-  }
-
-  Pointi pBC ;//= PointImage();
-    if (BC.y > 0) {
+	Pointi pBC;
+	if (BC.y > 0) {
 		for (int l = AB.y; l < AC.y; l++) {
 			pBC.x = B.x + BC.x * (l-AB.y) / BC.y;
 			pBC.y = A.y + l;
 			pAC.x = A.x + AC.x * l / AC.y;
 			pAC.y = pBC.y;
-
-			/*alpha = (double)(pBC.lig - B.lig) / (double)BC.lig;
-			beta = (double)(pAC.lig - A.lig)/ (double)AC.lig;
-
-			coulG.R = (1-alpha)*coulB.R + alpha * coulC.R;
-			coulG.V = (1-alpha)*coulB.V + alpha * coulC.V;
-			coulG.B = (1-alpha)*coulB.B + alpha * coulC.B;
-			coulG.A = (1-alpha)*coulB.A + alpha * coulC.A;
-
-			coulD.R = (1-beta)*coulA.R + beta * coulC.R;
-			coulD.V = (1-beta)*coulA.V + beta * coulC.V;
-			coulD.B = (1-beta)*coulA.B + beta * coulC.B;
-			coulD.A = (1-beta)*coulA.A + beta * coulC.A;*/
-
+			
 			segment(pBC, pAC, coul, pixels);
-		//Segment(pBC, pAC, coulG, coulD, image);
 		}
 	} else {
-		//Segment(B, C, coulB, coulC, image);
 		segment(B, C, coul, pixels);
-    }
+	}
 }
 
 
@@ -201,13 +147,7 @@ void render(Model m) {
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
         pixels[i] = black;
     }
-	
-	/*for (int i = 0; i < m.nbvertex(); i++) {
-		Point p = m.point(i);
-		Pointi pi = pointToPointi(p);
-		pixels[pi.y*WIDTH + pi.x] = white;
-	}*/
-    
+
 	Pointi p1 = {300,100,10};
 	Pointi p2 = {50,300,0};	
 	Pointi p3 = {200,400,10};
