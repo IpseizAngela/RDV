@@ -8,6 +8,9 @@
 #define WIDTH 800
 #define HEIGHT 800
 
+
+Point dir_lum = {0, 800, -1};
+
 using namespace std;
 
 void segment(Pointi A, Pointi B, Color coul, std::vector<Color> &pixels)
@@ -61,7 +64,11 @@ void triangle(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pixels)
 }
 
 
-void trianglePlein(Pointi A, Pointi B, Pointi C, Color coul, std::vector<Color> &pixels) {
+void trianglePlein(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pixels) {
+	
+	//Calcul de la normal d'un triangle vecteur(AB) * vecteur(BC)
+	//Calcul du vecteur AB -> xB - xA ; yB - yA
+	
 	Pointi tmp;
 
 	if (A.y > B.y) {
@@ -74,9 +81,17 @@ void trianglePlein(Pointi A, Pointi B, Pointi C, Color coul, std::vector<Color> 
 		tmp = A; A = B; B = tmp;
 	}
 
-	Pointi AB = {B.x - A.x, B.y - A.y, 0};
+	Pointi AB = {B.x - A.x, B.y - A.y, 0}; //vecteur AB
 	Pointi AC = {C.x - A.x, C.y - A.y, 0};
 	Pointi BC = {C.x - B.x, C.y - B.y, 0};
+	
+	Point normale = {AB.x*BC.x, AB.y*BC.y, AB.z*BC.z};
+	normale.normalize();
+	float intensite = normale*dir_lum;
+	Color coul = c;
+	if (intensite > 0) {
+		coul = {intensite*c.r, intensite*c.g, intensite*c.b, 0};
+	}
 
 	Pointi pAB ;
 	Pointi pAC ;
