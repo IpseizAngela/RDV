@@ -148,7 +148,7 @@ void render(Model m) {
         pixels[i] = black;
     }
 
-	Pointi p1 = {300,100,10};
+	/*Pointi p1 = {300,100,10};
 	Pointi p2 = {50,300,0};	
 	Pointi p3 = {200,400,10};
 	Pointi p4 = {400,200,0};
@@ -160,9 +160,9 @@ void render(Model m) {
 	
 	trianglePlein(p1, p2, p3, rouge, pixels);
 	trianglePlein(p4, p5, p6, vert, pixels);
-	trianglePlein(p7, p8, p9, bleu, pixels);
+	trianglePlein(p7, p8, p9, bleu, pixels);*/
 	
-	/*for (int nface = 0; nface < m.nbfaces(); nface++) {
+	for (int nface = 0; nface < m.nbfaces(); nface++) {
 		Point p1 = m.point(m.vert(nface, 0));
 		Point p2 = m.point(m.vert(nface, 1));
 		Point p3 = m.point(m.vert(nface, 2));
@@ -171,8 +171,8 @@ void render(Model m) {
 		Pointi p2i = pointToPointi(p2);
 		Pointi p3i = pointToPointi(p3);
 		
-		triangle(p1i, p2i, p3i, white, pixels);
-	}*/
+		trianglePlein(p1i, p2i, p3i, white, pixels);
+	}
     
     
     std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
