@@ -81,11 +81,11 @@ void trianglePlein(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pi
 		tmp = A; A = B; B = tmp;
 	}
 
-	Pointi AB = {B.x - A.x, B.y - A.y, 0}; //vecteur AB
-	Pointi AC = {C.x - A.x, C.y - A.y, 0};
-	Pointi BC = {C.x - B.x, C.y - B.y, 0};
+	Pointi AB = {B.x - A.x, B.y - A.y, B.z - A.z}; //vecteur AB
+	Pointi AC = {C.x - A.x, C.y - A.y, C.z - A.z};
+	Pointi BC = {C.x - B.x, C.y - B.y, C.z - B.z};
 	
-	Point normale = {AB.x*BC.x, AB.y*BC.y, AB.z*BC.z};
+	Point normale = {(float)AB.x*BC.x, (float)AB.y*BC.y, (float)AB.z*BC.z};
 	normale.normalize();
 	float intensite = normale*dir_lum;
 	Color coul = c;
