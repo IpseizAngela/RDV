@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
+#include <limits>
 #include "data.hpp"
 #include "model.h"
 
@@ -62,7 +63,6 @@ void triangle(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pixels)
 	segment(B, C, c, pixels);
 	segment(A, C, c, pixels);
 }
-
 
 void trianglePlein(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pixels) {
 	
@@ -151,9 +151,27 @@ Pointi pointToPointi(Point p) {
 	return pi;
 }
 
+// TRP
+Point world2screen(Point v) {
+    return Point(int((v.x+1.)*WIDTH/2.+.5), int((v.y+1.)*HEIGHT/2.+.5), v.z);
+}
+// TRP
+Point barycentric(Point A, Point B, Point C, Point P) {
+    Point s[2];
+    for (int i=2; i--; ) {
+        s[i][0] = C[i]-A[i];
+        s[i][1] = B[i]-A[i];
+        s[i][2] = A[i]-P[i];
+    }
+    Point u = cross(s[0], s[1]);
+    if (std::abs(u[2])>1e-2) // dont forget that u[2] is integer. If it is zero then triangle ABC is degenerate
+        return Point(1.f-(u.x+u.y)/u.z, u.y/u.z, u.x/u.z);
+    return Point(-1,1,1); // in this case generate negative coordinates, it will be thrown away by the rasterizator
+}
 
 void render(Model m) {
-    std::vector<Color> pixels(WIDTH*HEIGHT*3);
+    int taillePixels = WIDTH*HEIGHT*3;
+    std::vector<Color> pixels(taillePixels);
     Color black = {0, 0, 0, 0};
     Color white = {255,255 ,255, 0};
     Color vert = {0,255 ,0, 0};
@@ -172,12 +190,17 @@ void render(Model m) {
 	Pointi p7 = {400,220,0};
 	Pointi p8 = {400,490,0};
 	Pointi p9 = {300,650,0};
-	
+
 	trianglePlein(p1, p2, p3, rouge, pixels);
 	trianglePlein(p4, p5, p6, vert, pixels);
 	trianglePlein(p7, p8, p9, bleu, pixels);*/
-	
-	for (int nface = 0; nface < m.nbfaces(); nface++) {
+
+
+    int *zbuffer = new int[WIDTH*HEIGHT];
+    for (int i=WIDTH*HEIGHT; i--; zbuffer[i] = -std::numeric_limits<int>::max());
+
+    // Depart
+	/*for (int nface = 0; nface < m.nbfaces(); nface++) {
 		Point p1 = m.point(m.vert(nface, 0));
 		Point p2 = m.point(m.vert(nface, 1));
 		Point p3 = m.point(m.vert(nface, 2));
@@ -187,9 +210,50 @@ void render(Model m) {
 		Pointi p3i = pointToPointi(p3);
 		
 		trianglePlein(p1i, p2i, p3i, white, pixels);
-	}
-    
-    
+	}*/
+
+	// Moi
+    /*for(int i = 0; i < taillePixels ; i++){
+        Color p = pixels[i];
+
+        bool cache = p.z <= zbuffer[int(p.x+p.y*WIDTH)];
+        if(!cache){
+            zbuffer[int(p.x+p.y*WIDTH)] = p.z;
+            pixels[int(p.x+p.y*WIDTH)] = white;
+        }
+    }*/
+
+    // TRP
+
+    for (int k=0; k<m.nbfaces(); k++) {
+        Point pts[3];
+        for (int i = 0; i < 3; i++){
+            pts[i] = world2screen(m.point(m.vert(k,i)));
+        }
+        Vec2f bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+        Vec2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
+        Vec2f clamp(WIDTH - 1, HEIGHT - 1);
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 2; j++) {
+                bboxmin[j] = std::max(0.f, std::min(bboxmin[j], pts[i][j]));
+                bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]));
+            }
+        }
+        Point P;
+        for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
+            for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
+                Point bc_screen = barycentric(pts[0], pts[1], pts[2], P);
+                if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0) continue;
+                P.z = 0;
+                for (int i = 0; i < 3; i++) P.z += pts[i][2] * bc_screen[i];
+                if (zbuffer[int(P.x + P.y * WIDTH)] < P.z) {
+                    zbuffer[int(P.x + P.y * WIDTH)] = P.z;
+                    pixels[int(P.x+P.y*WIDTH)] = white;
+                }
+            }
+        }
+    }
+
     std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
         for (size_t j = 0; j<3; j++) {
