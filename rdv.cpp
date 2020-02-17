@@ -9,7 +9,7 @@
 #define HEIGHT 800
 
 
-Point dir_lum = {0, 800, -1};
+Point dir_lum = {0, 0, -1};
 
 using namespace std;
 
@@ -36,13 +36,21 @@ void segment(Pointi A, Pointi B, Color coul, std::vector<Color> &pixels, std::ve
 
 	while (col != B.x + sensCol) {
 		index = lig*WIDTH + col;
-		if (zbuffer[index] >= z) {
+		if (zbuffer[index] > z) {
 			pixels[index] = coul;
 			zbuffer[index] = z;
 		}
 		col = col + sensCol;
+		// delta = (double)(col - A.x) / (B.x - A.x);
 		delta = (double)(col - A.x) / (B.x - A.x);
-		z = (1-delta)*A.z + delta*B.z;
+		// z = (1-delta)*A.z + delta*B.z;
+		z = A.z + (B.z - A.z)*delta;
+	}
+	z = A.z + (B.z - A.z); 
+	index = lig*WIDTH + col;
+	if (zbuffer[index] > z) {
+		pixels[index] = coul;
+		zbuffer[index] = z;
 	}
 }
 
@@ -53,7 +61,7 @@ void triangle(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pixels,
 }
 
 
-void trianglePlein(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pixels, std::vector<float> &zbuffer) {
+void trianglePlein(Pointi A, Pointi B, Pointi C, Color coul, std::vector<Color> &pixels, std::vector<float> &zbuffer) {
 	
 	//Calcul de la normal d'un triangle vecteur(AB) * vecteur(BC)
 	//Calcul du vecteur AB -> xB - xA ; yB - yA
@@ -73,14 +81,6 @@ void trianglePlein(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pi
 	Pointi AB = {B.x - A.x, B.y - A.y, B.z - A.z}; //vecteur AB
 	Pointi AC = {C.x - A.x, C.y - A.y, C.z - A.z};
 	Pointi BC = {C.x - B.x, C.y - B.y, C.z - B.z};
-	
-	Point normale = {(float)AB.x*BC.x, (float)AB.y*BC.y, (float)AB.z*BC.z};
-	normale.normalize();
-	float intensite = normale*dir_lum;
-	Color coul = c;
-	if (intensite > 0) {
-		//coul = {intensite*c.r, intensite*c.g, intensite*c.b, 0};
-	}
 
 	Pointi pAB ;
 	Pointi pAC ;
@@ -160,12 +160,14 @@ Pointi pointToPointi(Point p) {
 
 
 void render(Model m) {
-    std::vector<Color> pixels(WIDTH*HEIGHT);
+    
     Color black = {0, 0, 0, 0};
     Color white = {255,255 ,255, 0};
     Color vert = {0,255 ,0, 0};
     Color bleu = {0,0 ,255, 0};
     Color rouge = {255,0, 0, 0};
+	
+	std::vector<Color> pixels(WIDTH*HEIGHT);
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
         pixels[i] = black;
     }
@@ -187,7 +189,7 @@ void render(Model m) {
 	Pointi p8 = {400,490,0};
 	Pointi p9 = {300,650,0};*/
 	
-	Pointi p1 = {50,100,10};
+	/*Pointi p1 = {50,100,10};
     Pointi p2 = {100,300,10};
     Pointi p3 = {200,200,20};
 
@@ -201,9 +203,9 @@ void render(Model m) {
 	
 	trianglePlein(p1, p2, p3, rouge, pixels, zBuffer);
 	trianglePlein(p4, p5, p6, vert, pixels, zBuffer);
-	trianglePlein(p7, p8, p9, bleu, pixels, zBuffer);
+	trianglePlein(p7, p8, p9, bleu, pixels, zBuffer);*/
 	
-	/*for (int nface = 0; nface < m.nbfaces(); nface++) {
+	for (int nface = 0; nface < m.nbfaces(); nface++) {
 		Point p1 = m.point(m.vert(nface, 0));
 		Point p2 = m.point(m.vert(nface, 1));
 		Point p3 = m.point(m.vert(nface, 2));
@@ -212,8 +214,22 @@ void render(Model m) {
 		Pointi p2i = pointToPointi(p2);
 		Pointi p3i = pointToPointi(p3);
 		
-		trianglePlein(p1i, p2i, p3i, white, pixels);
-	}*/
+		Point p12 = {p2.x - p1.x, p2.y - p1.y, p2.z - p1.z}; //vecteur AB
+		Point p13 = {p3.x - p1.x, p3.y - p1.y, p3.z - p1.z};
+		Point p23 = {p3.x - p2.x, p3.y - p2.y, p3.z - p2.z};
+		
+		//Point normale = {(float)AB.x*BC.x, (float)AB.y*BC.y, (float)AB.z*BC.z};
+		Point normale = {(float)((p12.y * p23.z) - (p12.z * p23.y)), (float)((p12.z * p23.x) - (p12.x * p23.z)), (float)((p12.x * p23.y) - (p12.y * p23.x))};
+		normale.normalize();
+		float intensite = normale*dir_lum;
+		cout << "intensité = " << intensite << endl;
+		Color coul = white;
+		if (intensite > 0) {
+			coul = {intensite*white.r, intensite*white.g, intensite*white.b, 0};
+		}
+		
+		trianglePlein(p1i, p2i, p3i, coul, pixels, zBuffer);
+	}
     
     
     std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
