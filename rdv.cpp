@@ -1,7 +1,7 @@
 #include <iostream>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
 #include <vector>
+#include <limits>
 #include "data.hpp"
 #include "model.h"
 
@@ -34,7 +34,7 @@ void segment(Pointi A, Pointi B, Color coul, std::vector<Color> &pixels, std::ve
 	double delta;
 	int index;
 
-	while (col != B.x + sensCol) {
+	/*while (col != B.x + sensCol) {
 		index = lig*WIDTH + col;
 		if (zbuffer[index] > z) {
 			pixels[index] = coul;
@@ -45,13 +45,17 @@ void segment(Pointi A, Pointi B, Color coul, std::vector<Color> &pixels, std::ve
 		delta = (double)(col - A.x) / (B.x - A.x);
 		// z = (1-delta)*A.z + delta*B.z;
 		z = A.z + (B.z - A.z)*delta;
-	}
-	z = A.z + (B.z - A.z); 
-	index = lig*WIDTH + col;
-	if (zbuffer[index] > z) {
-		pixels[index] = coul;
-		zbuffer[index] = z;
-	}
+	}*/
+    while (col != B.x + sensCol) {
+        index = lig*WIDTH + col;
+        if (zbuffer[index] < z) {
+            pixels[index] = coul;
+            zbuffer[index] = z;
+        }
+        col = col + sensCol;
+        delta = (double)(col - A.x) / (B.x - A.x);
+        z = (1-delta)*A.z + delta*B.z;
+    }
 }
 
 void triangle(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pixels, std::vector<float> &zbuffer) {
@@ -174,7 +178,7 @@ void render(Model m) {
 	
 	std::vector<float> zBuffer(WIDTH*HEIGHT);
 	for(size_t i = 0; i < HEIGHT*WIDTH; ++i) {
-        zBuffer[i] = WIDTH*HEIGHT;
+        zBuffer[i] = -1*std::numeric_limits<int>::max();
     }
 
 	/*Pointi p1 = {300,100,10};
@@ -220,7 +224,11 @@ void render(Model m) {
 		
 		//Point normale = {(float)AB.x*BC.x, (float)AB.y*BC.y, (float)AB.z*BC.z};
 		//Point normale = {(float)((p12.y * p23.z) - (p12.z * p23.y)), (float)((p12.z * p23.x) - (p12.x * p23.z)), (float)((p12.x * p23.y) - (p12.y * p23.x))};
-        Point normale = (p3 - p1)^(p2 - p1);
+        //Point normale = (p3 - p1)^(p2 - p1);
+
+        //Point normale = (m.normal(nface, 2) - m.normal(nface, 0)) ^(m.normal(nface, 1) - m.normal(nface, 0));
+        Point normale = m.normal(nface,0);
+
         normale.normalize();
 		float intensite = normale*dir_lum;
 		//cout << "intensité = " << intensite << endl;
@@ -248,6 +256,10 @@ int main(int argc, char** argv) {
     string file_nm  ("../lib/obj/diablo3_pose/diablo3_pose_nm_tangent.tga");
     string file_diff("../lib/obj/diablo3_pose/diablo3_pose_diffuse.tga");
     string file_spec("../lib/obj/diablo3_pose/diablo3_pose_spec.tga");
+    /*string file_obj ("../lib/obj/african_head/african_head.obj");
+    string file_nm  ("../lib/obj/african_head/african_head_nm_tangent.tga");
+    string file_diff("../lib/obj/african_head/african_head_diffuse.tga");
+    string file_spec("../lib/obj/african_head/african_head_spec.tga");*/
     if (5==argc) {
         file_obj  = std::string(argv[1]);
         file_nm   = std::string(argv[2]);
