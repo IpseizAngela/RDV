@@ -200,7 +200,7 @@ void render(Model m) {
 	Pointi p7 = {0,50,0};
     Pointi p8 = {50,0,0};
     Pointi p9 = {300,300,60};
-	
+
 	trianglePlein(p1, p2, p3, rouge, pixels, zBuffer);
 	trianglePlein(p4, p5, p6, vert, pixels, zBuffer);
 	trianglePlein(p7, p8, p9, bleu, pixels, zBuffer);*/
@@ -219,10 +219,11 @@ void render(Model m) {
 		Point p23 = {p3.x - p2.x, p3.y - p2.y, p3.z - p2.z};
 		
 		//Point normale = {(float)AB.x*BC.x, (float)AB.y*BC.y, (float)AB.z*BC.z};
-		Point normale = {(float)((p12.y * p23.z) - (p12.z * p23.y)), (float)((p12.z * p23.x) - (p12.x * p23.z)), (float)((p12.x * p23.y) - (p12.y * p23.x))};
-		normale.normalize();
+		//Point normale = {(float)((p12.y * p23.z) - (p12.z * p23.y)), (float)((p12.z * p23.x) - (p12.x * p23.z)), (float)((p12.x * p23.y) - (p12.y * p23.x))};
+        Point normale = (p3 - p1)^(p2 - p1);
+        normale.normalize();
 		float intensite = normale*dir_lum;
-		cout << "intensité = " << intensite << endl;
+		//cout << "intensité = " << intensite << endl;
 		Color coul = white;
 		if (intensite > 0) {
 			coul = {intensite*white.r, intensite*white.g, intensite*white.b, 0};
