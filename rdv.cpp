@@ -192,8 +192,21 @@ void render(Model m) {
 	Pointi p7 = {400,220, 0};
 	Pointi p8 = {400,490,0};
 	Pointi p9 = {300,650,0};*/
-	
-	/*Pointi p1 = {50,100,10};
+
+	/*
+    Point pf1 = {50,100,10};
+    Point pf2 = {100,300,10};
+    Point pf3 = {200,200,20};
+
+    Point pf4 = {100,50,15};
+    Point pf5 = {150,300,15};
+    Point pf6 = {200,100,15};
+
+    Point pf7 = {0,50,0};
+    Point pf8 = {50,0,0};
+    Point pf9 = {300,300,60};
+
+	Pointi p1 = {50,100,10};
     Pointi p2 = {100,300,10};
     Pointi p3 = {200,200,20};
 
@@ -205,10 +218,43 @@ void render(Model m) {
     Pointi p8 = {50,0,0};
     Pointi p9 = {300,300,60};
 
-	trianglePlein(p1, p2, p3, rouge, pixels, zBuffer);
-	trianglePlein(p4, p5, p6, vert, pixels, zBuffer);
-	trianglePlein(p7, p8, p9, bleu, pixels, zBuffer);*/
-	
+
+    Point normale = (pf3 - pf1)^(pf2 - pf1);
+    normale.normalize();
+    float intensite = normale*dir_lum;
+    //cout << "intensité = " << intensite << endl;
+    Color coul = white;
+    if (intensite > 0) {
+        coul = {intensite*white.r, intensite*white.g, intensite*white.b, 0};
+    }
+	trianglePlein(p1, p2, p3, coul, pixels, zBuffer);
+
+
+    normale = (pf6 - pf4)^(pf5 - pf4);
+    normale.normalize();
+    intensite = normale*dir_lum;
+    //cout << "intensité = " << intensite << endl;
+    coul = rouge;
+    if (intensite > 0) {
+        coul = {intensite*rouge.r, intensite*rouge.g, intensite*rouge.b, 0};
+    }
+	trianglePlein(p4, p5, p6, coul, pixels, zBuffer);
+
+
+    normale = (pf9 - pf7)^(pf8 - pf7);
+    normale.normalize();
+     intensite = normale*dir_lum;
+    //cout << "intensité = " << intensite << endl;
+     coul = vert;
+    if (intensite > 0) {
+        coul = {intensite*vert.r, intensite*vert.g, intensite*vert.b, 0};
+    }
+	trianglePlein(p7, p8, p9, coul, pixels, zBuffer);*/
+
+
+
+	// Affichage du modèle
+
 	for (int nface = 0; nface < m.nbfaces(); nface++) {
 		Point p1 = m.point(m.vert(nface, 0));
 		Point p2 = m.point(m.vert(nface, 1));
@@ -226,8 +272,8 @@ void render(Model m) {
 		//Point normale = {(float)((p12.y * p23.z) - (p12.z * p23.y)), (float)((p12.z * p23.x) - (p12.x * p23.z)), (float)((p12.x * p23.y) - (p12.y * p23.x))};
         //Point normale = (p3 - p1)^(p2 - p1);
 
-        //Point normale = (m.normal(nface, 2) - m.normal(nface, 0)) ^(m.normal(nface, 1) - m.normal(nface, 0));
-        Point normale = m.normal(nface,0);
+        Point normale = (m.normal(nface, 2) - m.normal(nface, 0)) ^(m.normal(nface, 1) - m.normal(nface, 0));
+        //Point normale = m.normal(nface,0);
 
         normale.normalize();
 		float intensite = normale*dir_lum;
