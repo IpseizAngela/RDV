@@ -46,7 +46,6 @@ void segment(Pointi A, Pointi B, Color coul, std::vector<Color> &pixels, std::ve
 		delta = (double)(col - A.x) / (double)(B.x - A.x);
 		 
 		z = (1-delta)*A.z + delta*B.z;
-		//z = A.z + (B.z - A.z)*delta;
 	}
 }
 
@@ -83,7 +82,7 @@ void trianglePlein(Pointi A, Pointi B, Pointi C, Color coul, std::vector<Color> 
 
 	double alpha, beta;
 	if (AB.y > 0) {
-		for (int l=0; l < AB.y; l++) {
+		for (int l=0; l <= AB.y; l++) {
 			pAB.x = A.x + AB.x * l / AB.y;
 			pAB.y = A.y + l;
 			// pAB.z = A.z;
@@ -105,7 +104,7 @@ void trianglePlein(Pointi A, Pointi B, Pointi C, Color coul, std::vector<Color> 
 
 	Pointi pBC;
 	if (BC.y > 0) {
-		for (int l = AB.y; l < AC.y; l++) {
+		for (int l = AB.y; l <= AC.y; l++) {
 			pBC.x = B.x + BC.x * (l-AB.y) / BC.y;
 			pBC.y = A.y + l;
 			// pBC.z = B.z;
@@ -159,6 +158,25 @@ Pointi pointToPointi(Point p) {
 	return pi;
 }
 
+Pointi pointToPointi(Point p, float d) {
+	Pointi pi;
+	float h = HEIGHT / 2.;
+    float w = WIDTH / 2.;
+	float pr = PROF /2.;
+	if (p.x < 0) pi.x = (int) (w - abs(p.x*w));
+	else pi.x = (int) (w + p.x*w);
+        
+	if (p.y < 0) pi.y = (int) (h + abs(p.y*h));
+	else pi.y = (int) (h - p.y*h);
+	
+	if (p.z < 0) pi.z = (int) (pr - abs(p.z*pr));
+	else pi.z = (int) (pr + p.z*pr);
+	
+	pi.x += d;
+	
+	return pi;
+}
+
 
 void render(Model m) {
     
@@ -169,26 +187,22 @@ void render(Model m) {
     Color rouge = {255,0, 0, 0};
 	
 	std::vector<Color> pixels(WIDTH*HEIGHT);
+	std::vector<Color> pixelsR(WIDTH*HEIGHT);
+	std::vector<Color> pixelsB(WIDTH*HEIGHT);
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
-        pixels[i] = black;
+        //pixels[i] = black;
+        pixelsR[i] = black;
+        pixelsB[i] = black;
     }
 	
 	std::vector<float> zBuffer(WIDTH*HEIGHT);
+	std::vector<float> zBufferR(WIDTH*HEIGHT);
+	std::vector<float> zBufferB(WIDTH*HEIGHT);
 	for(size_t i = 0; i < HEIGHT*WIDTH; ++i) {
-        zBuffer[i] = -WIDTH*HEIGHT*1000;
+        //zBuffer[i] = -WIDTH*HEIGHT*1000;
+        zBufferR[i] = -WIDTH*HEIGHT*1000;
+        zBufferB[i] = -WIDTH*HEIGHT*1000;
     }
-
-	/*Pointi p1 = {300,100,10};
-	Pointi p2 = {50,300,0};	
-	Pointi p3 = {200,400,10};
-	
-	Pointi p4 = {400,200,0};
-	Pointi p5 = {600,200,0};
-	Pointi p6 = {300,400,0};
-	
-	Pointi p7 = {400,220, 0};
-	Pointi p8 = {400,490,0};
-	Pointi p9 = {300,650,0};*/
 	
 	/*Pointi p1 = {50,100,10};
     Pointi p2 = {100,300,10};
@@ -200,58 +214,61 @@ void render(Model m) {
 	
 	Pointi p7 = {0,50,0};
     Pointi p8 = {50,0,0};
-    Pointi p9 = {300,300,60};*/
-	
-	/*Pointi p1 = {300, 100, 0};
-	Pointi p2 = {300,200,0};
-	Pointi p3 = {140,140,10};
-	
-	Pointi p4 = {100,100,0};
-	Pointi p5 = {100,200,0};
-	Pointi p6 = {260,160,10};
-	
-	
+    Pointi p9 = {300,300,60};
 	
 	trianglePlein(p1, p2, p3, rouge, pixels, zBuffer);
-	trianglePlein(p4, p5, p6, vert, pixels, zBuffer);*/
-	//trianglePlein(p7, p8, p9, bleu, pixels, zBuffer);
+	trianglePlein(p4, p5, p6, vert, pixels, zBuffer);
+	trianglePlein(p7, p8, p9, bleu, pixels, zBuffer);*/
 	
+	int delta = 20; 	
 	for (int nface = 0; nface < m.nbfaces(); nface++) {
 		Point p1 = m.point(m.vert(nface, 0));
 		Point p2 = m.point(m.vert(nface, 1));
 		Point p3 = m.point(m.vert(nface, 2));
 		
-		//cout << "p1.z = " << p1.z << " p2.z = " << p2.z << " p3.z = " << p3.z << endl;
+		Pointi p1i = pointToPointi(p1, -delta);
+		Pointi p2i = pointToPointi(p2, -delta);
+		Pointi p3i = pointToPointi(p3, -delta);
 		
-		Pointi p1i = pointToPointi(p1);
+		/*Pointi p1i = pointToPointi(p1);
 		Pointi p2i = pointToPointi(p2);
-		Pointi p3i = pointToPointi(p3);
-		
-		//cout << "p1i.z = " << p1.z << " p2i.z = " << p2.z << " p3i.z = " << p3.z << endl;
+		Pointi p3i = pointToPointi(p3);*/
 		
 		Point p12 = {p2.x - p1.x, p2.y - p1.y, p2.z - p1.z}; //vecteur AB
 		Point p13 = {p3.x - p1.x, p3.y - p1.y, p3.z - p1.z};
 		Point p23 = {p3.x - p2.x, p3.y - p2.y, p3.z - p2.z};
 		
-		//Point normale = {(float)AB.x*BC.x, (float)AB.y*BC.y, (float)AB.z*BC.z};
-		//Point normale = {(float)((p12.y * p23.z) - (p12.z * p23.y)), (float)((p12.z * p23.x) - (p12.x * p23.z)), (float)((p12.x * p23.y) - (p12.y * p23.x))};
 		Point normale = (p3 - p1)^(p2 - p1);
 		normale.normalize();
 		float intensite = normale*dir_lum;
-		Color coul = white;
+		// Color coul = white;
+		Color coulR = rouge;
+		Color coulB = bleu;
 		if (intensite > 0) {
-			coul = {intensite*white.r, intensite*white.g, intensite*white.b, 0};
+			// coul = {intensite*white.r, intensite*white.g, intensite*white.b, 0};
+			coulR = {intensite*rouge.r, intensite*rouge.g, intensite*rouge.b, 0};
+			coulB = {intensite*bleu.r, intensite*bleu.g, intensite*bleu.b, 0};
 		}
+	
+		// trianglePlein(p1i, p2i, p3i, coul, pixels, zBuffer);
+		trianglePlein(p1i, p2i, p3i, coulR, pixelsR, zBufferR);
 		
-		//coul = {rand() % 255, rand() % 255, rand() % 255, 0};
-		trianglePlein(p1i, p2i, p3i, coul, pixels, zBuffer);
+		p1i = pointToPointi(p1, delta);
+		p2i = pointToPointi(p2, delta);
+		p3i = pointToPointi(p3, delta);
+		
+		trianglePlein(p1i, p2i, p3i, coulB, pixelsB, zBufferB);
 	}
     
+	for (size_t i = 0; i < WIDTH*HEIGHT; i++) {
+        Color coulfinale = {pixelsR[i].r, 0, pixelsB[i].b, 0};
+        pixels[i] = coulfinale;
+    }
     
     std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
         for (size_t j = 0; j<3; j++) {
-            pixmap[i*3+j] = (unsigned char)/*(255 * std::max(0.f, std::min(1.f,*/ pixels[i][j];//)));
+            pixmap[i*3+j] = (unsigned char) pixels[i][j];
         }
     }
     writeppm(pixmap.data(), "test1.ppm");
