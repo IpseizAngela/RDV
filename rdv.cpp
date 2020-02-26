@@ -1,12 +1,14 @@
 #include <iostream>
-#include <cstdlib>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
 #include <vector>
-#include <limits>
 #include "data.hpp"
 #include "model.h"
 
 #define WIDTH 800
 #define HEIGHT 800
+#define PROF 100
 
 
 Point dir_lum = {0, 0, -1};
@@ -34,28 +36,18 @@ void segment(Pointi A, Pointi B, Color coul, std::vector<Color> &pixels, std::ve
 	double delta;
 	int index;
 
-	/*while (col != B.x + sensCol) {
+	while (col != B.x + sensCol) {
 		index = lig*WIDTH + col;
-		if (zbuffer[index] > z) {
+		if (zbuffer[index] < z) {
 			pixels[index] = coul;
 			zbuffer[index] = z;
 		}
 		col = col + sensCol;
-		// delta = (double)(col - A.x) / (B.x - A.x);
-		delta = (double)(col - A.x) / (B.x - A.x);
-		// z = (1-delta)*A.z + delta*B.z;
-		z = A.z + (B.z - A.z)*delta;
-	}*/
-    while (col != B.x + sensCol) {
-        index = lig*WIDTH + col;
-        if (zbuffer[index] < z) {
-            pixels[index] = coul;
-            zbuffer[index] = z;
-        }
-        col = col + sensCol;
-        delta = (double)(col - A.x) / (B.x - A.x);
-        z = (1-delta)*A.z + delta*B.z;
-    }
+		delta = (double)(col - A.x) / (double)(B.x - A.x);
+		 
+		z = (1-delta)*A.z + delta*B.z;
+		//z = A.z + (B.z - A.z)*delta;
+	}
 }
 
 void triangle(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pixels, std::vector<float> &zbuffer) {
@@ -153,11 +145,16 @@ Pointi pointToPointi(Point p) {
 	Pointi pi;
 	float h = HEIGHT / 2.;
     float w = WIDTH / 2.;
+	float pr = PROF /2.;
 	if (p.x < 0) pi.x = (int) (w - abs(p.x*w));
 	else pi.x = (int) (w + p.x*w);
         
 	if (p.y < 0) pi.y = (int) (h + abs(p.y*h));
 	else pi.y = (int) (h - p.y*h);
+	
+	if (p.z < 0) pi.z = (int) (pr - abs(p.z*pr));
+	else pi.z = (int) (pr + p.z*pr);
+	
 	
 	return pi;
 }
@@ -178,7 +175,7 @@ void render(Model m) {
 	
 	std::vector<float> zBuffer(WIDTH*HEIGHT);
 	for(size_t i = 0; i < HEIGHT*WIDTH; ++i) {
-        zBuffer[i] = -1*std::numeric_limits<int>::max();
+        zBuffer[i] = -WIDTH*HEIGHT*1000;
     }
 
 	/*Pointi p1 = {300,100,10};
@@ -192,21 +189,8 @@ void render(Model m) {
 	Pointi p7 = {400,220, 0};
 	Pointi p8 = {400,490,0};
 	Pointi p9 = {300,650,0};*/
-
-	/*
-    Point pf1 = {50,100,10};
-    Point pf2 = {100,300,10};
-    Point pf3 = {200,200,20};
-
-    Point pf4 = {100,50,15};
-    Point pf5 = {150,300,15};
-    Point pf6 = {200,100,15};
-
-    Point pf7 = {0,50,0};
-    Point pf8 = {50,0,0};
-    Point pf9 = {300,300,60};
-
-	Pointi p1 = {50,100,10};
+	
+	/*Pointi p1 = {50,100,10};
     Pointi p2 = {100,300,10};
     Pointi p3 = {200,200,20};
 
@@ -216,53 +200,34 @@ void render(Model m) {
 	
 	Pointi p7 = {0,50,0};
     Pointi p8 = {50,0,0};
-    Pointi p9 = {300,300,60};
-
-
-    Point normale = (pf3 - pf1)^(pf2 - pf1);
-    normale.normalize();
-    float intensite = normale*dir_lum;
-    //cout << "intensité = " << intensite << endl;
-    Color coul = white;
-    if (intensite > 0) {
-        coul = {intensite*white.r, intensite*white.g, intensite*white.b, 0};
-    }
-	trianglePlein(p1, p2, p3, coul, pixels, zBuffer);
-
-
-    normale = (pf6 - pf4)^(pf5 - pf4);
-    normale.normalize();
-    intensite = normale*dir_lum;
-    //cout << "intensité = " << intensite << endl;
-    coul = rouge;
-    if (intensite > 0) {
-        coul = {intensite*rouge.r, intensite*rouge.g, intensite*rouge.b, 0};
-    }
-	trianglePlein(p4, p5, p6, coul, pixels, zBuffer);
-
-
-    normale = (pf9 - pf7)^(pf8 - pf7);
-    normale.normalize();
-     intensite = normale*dir_lum;
-    //cout << "intensité = " << intensite << endl;
-     coul = vert;
-    if (intensite > 0) {
-        coul = {intensite*vert.r, intensite*vert.g, intensite*vert.b, 0};
-    }
-	trianglePlein(p7, p8, p9, coul, pixels, zBuffer);*/
-
-
-
-	// Affichage du modèle
-
+    Pointi p9 = {300,300,60};*/
+	
+	/*Pointi p1 = {300, 100, 0};
+	Pointi p2 = {300,200,0};
+	Pointi p3 = {140,140,10};
+	
+	Pointi p4 = {100,100,0};
+	Pointi p5 = {100,200,0};
+	Pointi p6 = {260,160,10};
+	
+	
+	
+	trianglePlein(p1, p2, p3, rouge, pixels, zBuffer);
+	trianglePlein(p4, p5, p6, vert, pixels, zBuffer);*/
+	//trianglePlein(p7, p8, p9, bleu, pixels, zBuffer);
+	
 	for (int nface = 0; nface < m.nbfaces(); nface++) {
 		Point p1 = m.point(m.vert(nface, 0));
 		Point p2 = m.point(m.vert(nface, 1));
 		Point p3 = m.point(m.vert(nface, 2));
 		
+		//cout << "p1.z = " << p1.z << " p2.z = " << p2.z << " p3.z = " << p3.z << endl;
+		
 		Pointi p1i = pointToPointi(p1);
 		Pointi p2i = pointToPointi(p2);
 		Pointi p3i = pointToPointi(p3);
+		
+		//cout << "p1i.z = " << p1.z << " p2i.z = " << p2.z << " p3i.z = " << p3.z << endl;
 		
 		Point p12 = {p2.x - p1.x, p2.y - p1.y, p2.z - p1.z}; //vecteur AB
 		Point p13 = {p3.x - p1.x, p3.y - p1.y, p3.z - p1.z};
@@ -270,19 +235,15 @@ void render(Model m) {
 		
 		//Point normale = {(float)AB.x*BC.x, (float)AB.y*BC.y, (float)AB.z*BC.z};
 		//Point normale = {(float)((p12.y * p23.z) - (p12.z * p23.y)), (float)((p12.z * p23.x) - (p12.x * p23.z)), (float)((p12.x * p23.y) - (p12.y * p23.x))};
-        //Point normale = (p3 - p1)^(p2 - p1);
-
-        Point normale = (m.normal(nface, 2) - m.normal(nface, 0)) ^(m.normal(nface, 1) - m.normal(nface, 0));
-        //Point normale = m.normal(nface,0);
-
-        normale.normalize();
+		Point normale = (p3 - p1)^(p2 - p1);
+		normale.normalize();
 		float intensite = normale*dir_lum;
-		//cout << "intensité = " << intensite << endl;
 		Color coul = white;
 		if (intensite > 0) {
 			coul = {intensite*white.r, intensite*white.g, intensite*white.b, 0};
 		}
 		
+		//coul = {rand() % 255, rand() % 255, rand() % 255, 0};
 		trianglePlein(p1i, p2i, p3i, coul, pixels, zBuffer);
 	}
     
@@ -302,10 +263,6 @@ int main(int argc, char** argv) {
     string file_nm  ("../lib/obj/diablo3_pose/diablo3_pose_nm_tangent.tga");
     string file_diff("../lib/obj/diablo3_pose/diablo3_pose_diffuse.tga");
     string file_spec("../lib/obj/diablo3_pose/diablo3_pose_spec.tga");
-    /*string file_obj ("../lib/obj/african_head/african_head.obj");
-    string file_nm  ("../lib/obj/african_head/african_head_nm_tangent.tga");
-    string file_diff("../lib/obj/african_head/african_head_diffuse.tga");
-    string file_spec("../lib/obj/african_head/african_head_spec.tga");*/
     if (5==argc) {
         file_obj  = std::string(argv[1]);
         file_nm   = std::string(argv[2]);

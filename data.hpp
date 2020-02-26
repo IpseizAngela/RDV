@@ -88,6 +88,9 @@ template <typename T> vec<3,T> cross(vec<3,T> v1, vec<3,T> v2) {
     return vec<3,T>(v1.y*v2.z - v1.z*v2.y, v1.z*v2.x - v1.x*v2.z, v1.x*v2.y - v1.y*v2.x);
 }
 
+template <typename T> vec<3,T> operator ^(vec<3,T> v1, vec<3,T> v2) { return vec<3,T>(v1.y*v2.z-v1.z*v2.y, v1.z*v2.x-v1.x*v2.z, v1.x*v2.y-v1.y*v2.x); }
+
+
 template <size_t DIM, typename T> std::ostream& operator<<(std::ostream& out, vec<DIM,T>& v) {
     for(unsigned int i=0; i<DIM; i++) {
         out << v[i] << " " ;

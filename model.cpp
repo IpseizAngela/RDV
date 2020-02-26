@@ -24,16 +24,12 @@ Model::Model(const char *filename) : vertex(), faces(){
             Point v;
             for (int i=0;i<3;i++) cur >> v[i];
             vertex.push_back(v);
-        }else if (!line.compare(0, 3, "vn ")) {
-            cur >> trash >> trash;
-            Point n;
-            for (int i=0;i<3;i++) cur >> n[i];
-            norms.push_back(n);
         }else if (!line.compare(0, 2, "f ")) {
             std::vector<Pointi> f;
             Pointi tmp;
             cur >> trash;
             while (cur >> tmp.x >> trash >> tmp.y >> trash >> tmp.z) {
+                //for (int i=0; i<3; i++) tmp[i]--; // in wavefront obj all indices start at 1, not zero
                 tmp.x--;
                 tmp.y--;
                 tmp.z--;
@@ -66,9 +62,4 @@ std::vector<Pointi> Model::face(int i) {
 int Model::vert(int fi, int li) {
     assert(fi>=0 && fi<nbfaces() && li>=0 && li<3);
     return faces[fi][li].x;
-}
-
-Point Model::normal(int fi, int li) {
-    assert(fi>=0 && fi<nbfaces() && li>=0 && li<3);
-    return norms[faces[fi][li].z];
 }
