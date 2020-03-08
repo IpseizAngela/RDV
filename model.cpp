@@ -29,7 +29,6 @@ Model::Model(const char *filename) : vertex(), faces(){
             Pointi tmp;
             cur >> trash;
             while (cur >> tmp.x >> trash >> tmp.y >> trash >> tmp.z) {
-                //for (int i=0; i<3; i++) tmp[i]--; // in wavefront obj all indices start at 1, not zero
                 tmp.x--;
                 tmp.y--;
                 tmp.z--;
@@ -52,11 +51,6 @@ int Model::nbfaces() {
 Point &Model::point(int i) {
     assert(i>=0 && i<nbvertex());
     return vertex[i];
-}
-
-std::vector<Pointi> Model::face(int i) {
-	assert(i>=0 && i<nbvertex());
-    return faces[i];
 }
 
 int Model::vert(int fi, int li) {

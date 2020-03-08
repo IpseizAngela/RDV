@@ -11,14 +11,13 @@
 class Model {
 private:
     std::vector<Point> vertex;
-    std::vector<std::vector<Pointi> > faces; // attention, this Vec3i means vertex/uv/normal ids
+    std::vector<std::vector<Pointi> > faces;
 
 public:
     Model(const char *filename);
     int nbvertex();
     int nbfaces();
     Point &point(int i);
-	std::vector<Pointi> face(int i);
     int vert(int fi, int li);
 };
 
