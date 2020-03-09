@@ -12,6 +12,7 @@ class Model {
 private:
     std::vector<Point> vertex;
     std::vector<std::vector<Pointi> > faces;
+    std::vector<Point> norms;
 
 public:
     Model(const char *filename);
@@ -19,6 +20,7 @@ public:
     int nbfaces();
     Point &point(int i);
     int vert(int fi, int li);
+    Point normal(int fi, int li);
 };
 
 

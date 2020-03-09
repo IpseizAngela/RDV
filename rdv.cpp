@@ -237,32 +237,36 @@ void render(Model m) {
 		Point p13 = {p3.x - p1.x, p3.y - p1.y, p3.z - p1.z};
 		Point p23 = {p3.x - p2.x, p3.y - p2.y, p3.z - p2.z};
 		
-		Point normale = (p3 - p1)^(p2 - p1);
-		normale.normalize();
+		//Point normale = (p3 - p1)^(p2 - p1);
+        //Point normale = m.normal(nface,0);
+        Point normale = (m.normal(nface, 2) - m.normal(nface, 0)) ^(m.normal(nface, 1) - m.normal(nface, 0));
+
+
+        normale.normalize();
 		float intensite = normale*dir_lum;
-		// Color coul = white;
-		Color coulR = rouge;
-		Color coulB = bleu;
+		 Color coul = white;
+		//Color coulR = rouge;
+		//Color coulB = bleu;
 		if (intensite > 0) {
-			// coul = {intensite*white.r, intensite*white.g, intensite*white.b, 0};
-			coulR = {intensite*rouge.r, intensite*rouge.g, intensite*rouge.b, 0};
-			coulB = {intensite*bleu.r, intensite*bleu.g, intensite*bleu.b, 0};
+			 coul = {intensite*white.r, intensite*white.g, intensite*white.b, 0};
+			//coulR = {intensite*rouge.r, intensite*rouge.g, intensite*rouge.b, 0};
+			//coulB = {intensite*bleu.r, intensite*bleu.g, intensite*bleu.b, 0};
 		}
 	
-		// trianglePlein(p1i, p2i, p3i, coul, pixels, zBuffer);
-		trianglePlein(p1i, p2i, p3i, coulR, pixelsR, zBufferR);
+		 trianglePlein(p1i, p2i, p3i, coul, pixels, zBuffer);
+		//trianglePlein(p1i, p2i, p3i, coulR, pixelsR, zBufferR);
 		
 		p1i = pointToPointi(p1, delta);
 		p2i = pointToPointi(p2, delta);
 		p3i = pointToPointi(p3, delta);
 		
-		trianglePlein(p1i, p2i, p3i, coulB, pixelsB, zBufferB);
+		//trianglePlein(p1i, p2i, p3i, coulB, pixelsB, zBufferB);
 	}
     
-	for (size_t i = 0; i < WIDTH*HEIGHT; i++) {
+	/*for (size_t i = 0; i < WIDTH*HEIGHT; i++) {
         Color coulfinale = {pixelsR[i].r, 0, pixelsB[i].b, 0};
         pixels[i] = coulfinale;
-    }
+    }*/
     
     std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
