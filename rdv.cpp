@@ -16,35 +16,17 @@ using namespace std;
 
 void segment(Pointi A, Pointi B, Color coul, std::vector<Color> &pixels, std::vector<float> &zbuffer)
 {
-	//La distance de la colonne entre les deuc points
-	int dcol = B.x - A.x;
-	//Le point de départ
-	int col = A.x;
-	int lig = A.y;
-	//le sens de parcours
-	int sensCol = 1;
-
-	//si le parcours est de droite vers la gauche
-	if (dcol < 0) {
-		//le sens de parcours devient négatif
-		sensCol = -1;
-	}
-
-
-	float z = A.z;
-	double delta;
+	float z, gamma;
 	int index;
-
-	while (col != B.x + sensCol) {
-		index = lig*WIDTH + col;
+	if (A.x > B.x) std::swap(A, B);
+	for(int col = A.x; col <= B.x; col++) {
+		gamma = B.x==A.x ? 1. : (float)(col - A.x) / (float)(B.x - A.x);
+		z = A.z + gamma*(B.z - A.z);
+		index = A.y*WIDTH + col;
 		if (zbuffer[index] < z) {
 			pixels[index] = coul;
 			zbuffer[index] = z;
 		}
-		col = col + sensCol;
-		delta = (double)(col - A.x) / (double)(B.x - A.x);
-		 
-		z = (1-delta)*A.z + delta*B.z;
 	}
 }
 
@@ -57,67 +39,49 @@ void triangle(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pixels,
 
 void trianglePlein(Pointi A, Pointi B, Pointi C, Color coul, std::vector<Color> &pixels, std::vector<float> &zbuffer) {
 	
-	//Calcul de la normal d'un triangle vecteur(AB) * vecteur(BC)
-	//Calcul du vecteur AB -> xB - xA ; yB - yA
-	
-	Pointi tmp;
+	if (A.y > B.y) std::swap(A,B);
+	if (B.y > C.y) std::swap(B,C);
+	if (A.y > B.y) std::swap(A,B);
 
-	if (A.y > B.y) {
-		tmp = A; A = B; B = tmp;
-	}
-	if (B.y > C.y) {
-		tmp = C; C = B; B = tmp;
-	}
-	if (A.y > B.y) {
-		tmp = A; A = B; B = tmp;
-	}
-
-	Pointi AB = {B.x - A.x, B.y - A.y, B.z - A.z}; //vecteur AB
+	Pointi AB = {B.x - A.x, B.y - A.y, B.z - A.z}; 
 	Pointi AC = {C.x - A.x, C.y - A.y, C.z - A.z};
 	Pointi BC = {C.x - B.x, C.y - B.y, C.z - B.z};
+	Pointi pAB, pAC, pBC;
 
-	Pointi pAB ;
-	Pointi pAC ;
-
-	double alpha, beta;
+	float alpha, beta, gamma;
+	int index;
 	if (AB.y > 0) {
 		for (int l=0; l <= AB.y; l++) {
+			alpha = (float)l / (float)AB.y;
+			beta = (float)l / (float)AC.y;
+			
 			pAB.x = A.x + AB.x * l / AB.y;
 			pAB.y = A.y + l;
-			// pAB.z = A.z;
+			pAB.z = A.z + alpha * (B.z - A.z);
+
 			pAC.x = A.x + AC.x * l / AC.y;
 			pAC.y = pAB.y;
-			// pAC.z = A.z + AC.z;
-			
-			alpha = (double)(pAB.x - A.x) / (double)AB.x;
-			beta = (double)(pAC.x - A.x) / (double)AC.x;
-			
-			pAB.z = (1-alpha)*A.z + alpha * B.z;
-			pAC.z = (1-beta)*A.z + beta * C.z;
-			
+			pAC.z = A.z + beta * (C.z - A.z);
+
 			segment(pAB, pAC, coul, pixels, zbuffer);
 		}
 	} else {
 		segment(A, B, coul, pixels, zbuffer);
 	}
 
-	Pointi pBC;
 	if (BC.y > 0) {
 		for (int l = AB.y; l <= AC.y; l++) {
+			alpha = (float)(l - AB.y) / (float)BC.y;
+			beta = (float)l / (float)AC.y;
+			
 			pBC.x = B.x + BC.x * (l-AB.y) / BC.y;
 			pBC.y = A.y + l;
-			// pBC.z = B.z;
+			pBC.z = B.z + alpha * (C.z - B.z);
+			
 			pAC.x = A.x + AC.x * l / AC.y;
 			pAC.y = pBC.y;
-			// pAC.z = B.z + AC.z;
-			
-			alpha = (double)(pBC.x - B.x) / (double)BC.x;
-			beta = (double)(pAC.x - A.x) / (double)AC.x;
-		
-			
-			pBC.z = (1-alpha)*B.z + alpha * C.z;
-			pAC.z = (1-beta)*A.z + beta * C.z;
-			
+			pAC.z = A.z + beta * (C.z - A.z);
+
 			segment(pBC, pAC, coul, pixels, zbuffer);
 		}
 	} else {
@@ -144,6 +108,7 @@ Pointi pointToPointi(Point p) {
 	float h = HEIGHT / 2.;
     float w = WIDTH / 2.;
 	float pr = PROF /2.;
+
 	if (p.x < 0) pi.x = (int) (w - abs(p.x*w));
 	else pi.x = (int) (w + p.x*w);
         
@@ -152,7 +117,6 @@ Pointi pointToPointi(Point p) {
 	
 	if (p.z < 0) pi.z = (int) (pr - abs(p.z*pr));
 	else pi.z = (int) (pr + p.z*pr);
-	
 	
 	return pi;
 }
@@ -161,15 +125,11 @@ Pointi pointToPointi(Point p, float d) {
 	Pointi pi;
 	float h = HEIGHT / 2.;
     float w = WIDTH / 2.;
-	float pr = PROF /2.;
 	if (p.x < 0) pi.x = (int) (w - abs(p.x*w));
 	else pi.x = (int) (w + p.x*w);
         
 	if (p.y < 0) pi.y = (int) (h + abs(p.y*h));
 	else pi.y = (int) (h - p.y*h);
-	
-	if (p.z < 0) pi.z = (int) (pr - abs(p.z*pr));
-	else pi.z = (int) (pr + p.z*pr);
 	
 	pi.x += d;
 	
@@ -186,21 +146,21 @@ void render(Model m) {
     Color rouge = {255,0, 0, 0};
 	
 	std::vector<Color> pixels(WIDTH*HEIGHT);
-	std::vector<Color> pixelsR(WIDTH*HEIGHT);
-	std::vector<Color> pixelsB(WIDTH*HEIGHT);
+	/*std::vector<Color> pixelsR(WIDTH*HEIGHT);
+	std::vector<Color> pixelsB(WIDTH*HEIGHT);*/
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
-        //pixels[i] = black;
-        pixelsR[i] = black;
-        pixelsB[i] = black;
+        pixels[i] = black;
+        /*pixelsR[i] = black;
+        pixelsB[i] = black;*/
     }
 	
 	std::vector<float> zBuffer(WIDTH*HEIGHT);
-	std::vector<float> zBufferR(WIDTH*HEIGHT);
-	std::vector<float> zBufferB(WIDTH*HEIGHT);
+	/*std::vector<float> zBufferR(WIDTH*HEIGHT);
+	std::vector<float> zBufferB(WIDTH*HEIGHT);*/
 	for(size_t i = 0; i < HEIGHT*WIDTH; ++i) {
-        //zBuffer[i] = -WIDTH*HEIGHT*1000;
-        zBufferR[i] = -WIDTH*HEIGHT*1000;
-        zBufferB[i] = -WIDTH*HEIGHT*1000;
+        zBuffer[i] = -WIDTH*HEIGHT*1000;
+        /*zBufferR[i] = -WIDTH*HEIGHT*1000;
+        zBufferB[i] = -WIDTH*HEIGHT*1000;*/
     }
 	
 	/*Pointi p1 = {50,100,10};
@@ -215,52 +175,52 @@ void render(Model m) {
     Pointi p8 = {50,0,0};
     Pointi p9 = {300,300,60};
 	
-	trianglePlein(p1, p2, p3, rouge, pixels, zBuffer);
 	trianglePlein(p4, p5, p6, vert, pixels, zBuffer);
-	trianglePlein(p7, p8, p9, bleu, pixels, zBuffer);*/
+	trianglePlein(p1, p2, p3, rouge, pixels, zBuffer);*/
 	
-	int delta = 20; 	
+	//trianglePlein(p7, p8, p9, bleu, pixels, zBuffer);
+	
+	// int delta = 20; 	
 	for (int nface = 0; nface < m.nbfaces(); nface++) {
 		Point p1 = m.point(m.vert(nface, 0));
 		Point p2 = m.point(m.vert(nface, 1));
 		Point p3 = m.point(m.vert(nface, 2));
 		
-		Pointi p1i = pointToPointi(p1, -delta);
+		/*Pointi p1i = pointToPointi(p1, -delta);
 		Pointi p2i = pointToPointi(p2, -delta);
-		Pointi p3i = pointToPointi(p3, -delta);
+		Pointi p3i = pointToPointi(p3, -delta);*/
 		
-		/*Pointi p1i = pointToPointi(p1);
+		Pointi p1i = pointToPointi(p1);
 		Pointi p2i = pointToPointi(p2);
-		Pointi p3i = pointToPointi(p3);*/
+		Pointi p3i = pointToPointi(p3);
 		
-		Point p12 = {p2.x - p1.x, p2.y - p1.y, p2.z - p1.z}; //vecteur AB
+		/*Point p12 = {p2.x - p1.x, p2.y - p1.y, p2.z - p1.z}; //vecteur AB
 		Point p13 = {p3.x - p1.x, p3.y - p1.y, p3.z - p1.z};
-		Point p23 = {p3.x - p2.x, p3.y - p2.y, p3.z - p2.z};
+		Point p23 = {p3.x - p2.x, p3.y - p2.y, p3.z - p2.z};*/
 		
-		//Point normale = (p3 - p1)^(p2 - p1);
-        //Point normale = m.normal(nface,0);
-        Point normale = (m.normal(nface, 2) - m.normal(nface, 0)) ^(m.normal(nface, 1) - m.normal(nface, 0));
-
-
-        normale.normalize();
+		//Calcul qui est fait pour P1 ^ P2 : 
+		//template <typename T> vec<3,T> operator ^(vec<3,T> v1, vec<3,T> v2) { return vec<3,T>(v1.y*v2.z-v1.z*v2.y, v1.z*v2.x-v1.x*v2.z, v1.x*v2.y-v1.y*v2.x); }
+		Point normale = (p3 - p1)^(p2 - p1);
+		normale.normalize();
 		float intensite = normale*dir_lum;
-		 Color coul = white;
-		//Color coulR = rouge;
-		//Color coulB = bleu;
+		Color coul = white;
+		/*Color coulR = rouge;
+		Color coulB = bleu;*/
 		if (intensite > 0) {
-			 coul = {intensite*white.r, intensite*white.g, intensite*white.b, 0};
-			//coulR = {intensite*rouge.r, intensite*rouge.g, intensite*rouge.b, 0};
-			//coulB = {intensite*bleu.r, intensite*bleu.g, intensite*bleu.b, 0};
+			coul = {intensite*white.r, intensite*white.g, intensite*white.b, 0};
+			/*coulR = {intensite*rouge.r, intensite*rouge.g, intensite*rouge.b, 0};
+			coulB = {intensite*bleu.r, intensite*bleu.g, intensite*bleu.b, 0};*/
+			trianglePlein(p1i, p2i, p3i, coul, pixels, zBuffer);
 		}
-	
-		 trianglePlein(p1i, p2i, p3i, coul, pixels, zBuffer);
-		//trianglePlein(p1i, p2i, p3i, coulR, pixelsR, zBufferR);
+		
+		
+		/*trianglePlein(p1i, p2i, p3i, coulR, pixelsR, zBufferR);
 		
 		p1i = pointToPointi(p1, delta);
 		p2i = pointToPointi(p2, delta);
 		p3i = pointToPointi(p3, delta);
 		
-		//trianglePlein(p1i, p2i, p3i, coulB, pixelsB, zBufferB);
+		trianglePlein(p1i, p2i, p3i, coulB, pixelsB, zBufferB);*/
 	}
     
 	/*for (size_t i = 0; i < WIDTH*HEIGHT; i++) {

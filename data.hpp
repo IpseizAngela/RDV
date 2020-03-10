@@ -5,7 +5,6 @@
 #include <cassert>
 #include <iostream>
 
-template<size_t DimCols,size_t DimRows,typename T> class mat;
 
 template <size_t DIM, typename T> struct vec {
     vec() { for (size_t i=DIM; i--; data_[i] = T()); }
@@ -26,7 +25,6 @@ template <typename T> struct vec<3,T> {
     const T& operator[](const size_t i) const { assert(i<3); return i<=0 ? x : (1==i ? y : z); }
     float norm() { return std::sqrt(x*x+y*y+z*z); }
     vec<3,T> & normalize(T l=1) { *this = (*this)*(l/norm()); return *this; }
-	inline vec<3,T> operator ^(const vec<3,T> &v) const { return vec<3,T>(y*v.z-z*v.y, z*v.x-x*v.z, x*v.y-y*v.x); }
 
     T x,y,z;
 };
@@ -66,6 +64,10 @@ template<size_t DIM,typename T,typename U> vec<DIM,T> operator*(vec<DIM,T> lhs, 
     for (size_t i=DIM; i--; lhs[i]*=rhs);
     return lhs;
 }
+template<size_t DIM,typename U,typename T> vec<DIM,T> operator*(const U& rhs, vec<DIM,T> lhs) {
+    for (size_t i=DIM; i--; lhs[i]*=rhs);
+    return lhs;
+}
 
 template<size_t DIM,typename T,typename U> vec<DIM,T> operator/(vec<DIM,T> lhs, const U& rhs) {
     for (size_t i=DIM; i--; lhs[i]/=rhs);
@@ -98,47 +100,6 @@ template <size_t DIM, typename T> std::ostream& operator<<(std::ostream& out, ve
     return out ;
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-
-template<size_t DIM,typename T> struct dt {
-    static T det(const mat<DIM,DIM,T>& src) {
-        T ret=0;
-        for (size_t i=DIM; i--; ret += src[0][i]*src.cofactor(0,i));
-        return ret;
-    }
-};
-
-template<typename T> struct dt<1,T> {
-    static T det(const mat<1,1,T>& src) {
-        return src[0][0];
-    }
-};
-
-
-/////////////////////////////////////////////////////////////////////////////////
-
-// template<size_t DimRows,size_t DimCols,typename T> vec<DimRows,T> operator*(const mat<DimRows,DimCols,T>& lhs, const vec<DimCols,T>& rhs) {
-    // vec<DimRows,T> ret;
-    // for (size_t i=DimRows; i--; ret[i]=lhs[i]*rhs);
-    // return ret;
-// }
-
-// template<size_t R1,size_t C1,size_t C2,typename T>mat<R1,C2,T> operator*(const mat<R1,C1,T>& lhs, const mat<C1,C2,T>& rhs) {
-    // mat<R1,C2,T> result;
-    // for (size_t i=R1; i--; )
-        // for (size_t j=C2; j--; result[i][j]=lhs[i]*rhs.col(j));
-    // return result;
-// }
-
-// template<size_t DimRows,size_t DimCols,typename T>mat<DimCols,DimRows,T> operator/(mat<DimRows,DimCols,T> lhs, const T& rhs) {
-    // for (size_t i=DimRows; i--; lhs[i]=lhs[i]/rhs);
-    // return lhs;
-// }
-
-// template <size_t DimRows,size_t DimCols,class T> std::ostream& operator<<(std::ostream& out, mat<DimRows,DimCols,T>& m) {
-    // for (size_t i=0; i<DimRows; i++) out << m[i] << std::endl;
-    // return out;
-// }
 
 /////////////////////////////////////////////////////////////////////////////////
 
