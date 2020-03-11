@@ -15,7 +15,6 @@ Color col_diablo;
 
 using namespace std;
 
-// void segment(Pointi A, Pointi B, Color coulA, Color coulB, std::vector<Color> &pixels, std::vector<float> &zbuffer)
 void segment(Pointi A, Pointi B, float coulA, float coulB, std::vector<Color> &pixels, std::vector<float> &zbuffer)
 {
 	float i, z, gamma;
@@ -76,10 +75,8 @@ void trianglePlein(std::vector<Pointi> pts, std::vector<float> ins, std::vector<
 			
 			segment(pAB, pAC, inG, inD, pixels, zbuffer);
 		}
-	} else {
-		segment(A, B, inA, inB, pixels, zbuffer);
-	}
-
+	} else segment(A, B, inA, inB, pixels, zbuffer);
+	
 	if (BC.y > 0) {
 		for (int l = AB.y; l <= AC.y; l++) {
 			alpha = (float)(l - AB.y) / (float)BC.y;
@@ -98,9 +95,7 @@ void trianglePlein(std::vector<Pointi> pts, std::vector<float> ins, std::vector<
 
 			segment(pBC, pAC, inG, inD, pixels, zbuffer);
 		}
-	} else {
-		segment(B, C, inB, inC, pixels, zbuffer);
-	}
+	} else segment(B, C, inB, inC, pixels, zbuffer);
 }
 
 
@@ -117,12 +112,13 @@ void writeppm(unsigned char* image, const char* filename){
     }
 }
 
-Pointi pointToPointi(Point p) {
+
+Pointi pointToPointi(Point p, float d) {
 	Pointi pi;
 	float h = HEIGHT / 2.;
     float w = WIDTH / 2.;
 	float pr = PROF /2.;
-
+	
 	if (p.x < 0) pi.x = (int) (w - abs(p.x*w));
 	else pi.x = (int) (w + p.x*w);
         
@@ -132,107 +128,51 @@ Pointi pointToPointi(Point p) {
 	if (p.z < 0) pi.z = (int) (pr - abs(p.z*pr));
 	else pi.z = (int) (pr + p.z*pr);
 	
-	return pi;
-}
-
-Pointi pointToPointi(Point p, float d) {
-	Pointi pi;
-	float h = HEIGHT / 2.;
-    float w = WIDTH / 2.;
-	if (p.x < 0) pi.x = (int) (w - abs(p.x*w));
-	else pi.x = (int) (w + p.x*w);
-        
-	if (p.y < 0) pi.y = (int) (h + abs(p.y*h));
-	else pi.y = (int) (h - p.y*h);
-	
 	pi.x += d;
 	
 	return pi;
 }
 
 
-
-
 void render(Model m) {
 	int NB_PT = 3;
+	int TAILLE = WIDTH*HEIGHT;
     
-    Color black = {0, 0, 0, 0};
-    Color white = {255,255 ,255, 0};
-    Color vert = {0,255 ,0, 0};
-    Color bleu = {0,0 ,255, 0};
-    Color rouge = {255,0, 0, 0};
-	col_diablo = white;
+    Color blanc = {255,255 ,255, 0};
+    Color noir = {0, 0, 0, 0};
+	col_diablo = blanc;
 	
-	std::vector<Color> pixels(WIDTH*HEIGHT);
-	/*std::vector<Color> pixelsR(WIDTH*HEIGHT);
-	std::vector<Color> pixelsB(WIDTH*HEIGHT);*/
-    for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
-        pixels[i] = black;
-        /*pixelsR[i] = black;
-        pixelsB[i] = black;*/
-    }
+	std::vector<Color> pixels(TAILLE),pixelsR(TAILLE),pixelsB(TAILLE);
+	std::vector<float> zBufferR(TAILLE), zBufferB(TAILLE);
 	
-	std::vector<float> zBuffer(WIDTH*HEIGHT);
-	/*std::vector<float> zBufferR(WIDTH*HEIGHT);
-	std::vector<float> zBufferB(WIDTH*HEIGHT);*/
-	for(size_t i = 0; i < HEIGHT*WIDTH; ++i) {
-        zBuffer[i] = -WIDTH*HEIGHT*1000;
-        /*zBufferR[i] = -WIDTH*HEIGHT*1000;
-        zBufferB[i] = -WIDTH*HEIGHT*1000;*/
-    }
-	
-	/*Pointi p1 = {50,100,10};
-    Pointi p2 = {100,300,10};
-    Pointi p3 = {200,200,20};
-
-    Pointi p4 = {100,50,15};
-    Pointi p5 = {150,300,15};
-    Pointi p6 = {200,100,15};
-	
-	Pointi p7 = {0,50,0};
-    Pointi p8 = {50,0,0};
-    Pointi p9 = {300,300,60};
-	
-	trianglePlein(p4, p5, p6, vert, pixels, zBuffer);
-	trianglePlein(p1, p2, p3, rouge, vert, bleu, pixels, zBuffer); */
-	
-	//trianglePlein(p7, p8, p9, bleu, pixels, zBuffer);
-	
-	// int delta = 20; 	
 	std::vector<float> intensites(NB_PT);
 	std::vector<Point> points_modele(NB_PT);
-	std::vector<Pointi> points_ecran(NB_PT);
-	std::vector<Color> couleurs(NB_PT);
+	std::vector<Pointi> points_ecranR(NB_PT), points_ecranB(NB_PT);
+	
+    for (size_t i = 0; i < TAILLE; ++i) {
+        pixelsR[i] = noir;
+        pixelsB[i] = noir;
+		zBufferR[i] = -TAILLE*1000;
+        zBufferB[i] = -TAILLE*1000;
+    }
+	
+	int delta = 10; 	
 	for (int nface = 0; nface < m.nbfaces(); nface++) {
-		
-		Point normale = (points_modele[2] - points_modele[0])^(points_modele[1] - points_modele[0]);
-		normale.normalize();		
-		float intensite = normale*dir_lum;
-	 
-		Color coul = white;
-		
 		for (int i = 0; i < NB_PT; i++) {
 			points_modele[i] = m.point(m.vert(nface, i));
-			points_ecran[i] = pointToPointi(points_modele[i]);
+			points_ecranR[i] = pointToPointi(points_modele[i], - delta);
+			points_ecranB[i] = pointToPointi(points_modele[i], delta);
 			intensites[i] = -(m.normal(nface, i) * dir_lum);
 		}
 		
-		trianglePlein(points_ecran, intensites, pixels, zBuffer);
-		
-		
-		/*trianglePlein(p1i, p2i, p3i, coulR, pixelsR, zBufferR);
-		
-		p1i = pointToPointi(p1, delta);
-		p2i = pointToPointi(p2, delta);
-		p3i = pointToPointi(p3, delta);
-		
-		trianglePlein(p1i, p2i, p3i, coulB, pixelsB, zBufferB);*/
+		trianglePlein(points_ecranR, intensites, pixelsR, zBufferR);
+		trianglePlein(points_ecranB, intensites, pixelsB, zBufferB);
 	}
     
-	/*for (size_t i = 0; i < WIDTH*HEIGHT; i++) {
-        Color coulfinale = {pixelsR[i].r, 0, pixelsB[i].b, 0};
+	for (size_t i = 0; i < WIDTH*HEIGHT; i++) {
+        Color coulfinale = {(pixelsR[i].r+pixelsR[i].g+pixelsR[i].b)/3, 0, (pixelsB[i].r+pixelsB[i].g+pixelsB[i].b)/3, 0};
         pixels[i] = coulfinale;
-    }*/
+    }
     
     std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
@@ -242,6 +182,7 @@ void render(Model m) {
     }
     writeppm(pixmap.data(), "test1.ppm");
 }
+
 
 int main(int argc, char** argv) {
     cout << "Usage: " << argv[0] << " model.obj tangentnormals.jpg diffuse.jpg specular.jpg" << endl;
