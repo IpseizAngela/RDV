@@ -33,8 +33,8 @@ template <typename T> struct vec<4,T> {
     vec() : r(T()), g(T()), b(T()), a(T()) {}
     vec(T R, T G, T B, T A) : r(R), g(G), b(B), a(A) {}
     template <class U> vec<4,T>(const vec<4,U> &v);
-    T& operator[](const size_t i)       { assert(i<3); return i<=0 ? r : (1==i ? g : (2==i ? b : a)); }
-    const T& operator[](const size_t i) const { assert(i<3); return i<=0 ? r : (1==i ? g : (2==i ? b : a)); }
+    T& operator[](const size_t i)       { assert(i<4); return i<=0 ? r : (1==i ? g : (2==i ? b : a)); }
+    const T& operator[](const size_t i) const { assert(i<4); return i<=0 ? r : (1==i ? g : (2==i ? b : a)); }
     float norm() { return std::sqrt(r*r+g*g+b*b); }
     vec<4,T> & normalize(T l=1) { *this = (*this)*(l/norm()); return *this; }
 

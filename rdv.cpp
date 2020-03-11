@@ -14,34 +14,33 @@ Point dir_lum = {0, 0, -1};
 
 using namespace std;
 
-void segment(Pointi A, Pointi B, Color coul, std::vector<Color> &pixels, std::vector<float> &zbuffer)
+void segment(Pointi A, Pointi B, Color coulA, Color coulB, std::vector<Color> &pixels, std::vector<float> &zbuffer)
 {
 	float z, gamma;
 	int index;
-	if (A.x > B.x) std::swap(A, B);
+	Color c;
+	if (A.x > B.x) { std::swap(A, B);  std::swap(coulA, coulB); }
 	for(int col = A.x; col <= B.x; col++) {
 		gamma = B.x==A.x ? 1. : (float)(col - A.x) / (float)(B.x - A.x);
 		z = A.z + gamma*(B.z - A.z);
+		c = (1-gamma)*coulA + gamma*coulB; 
 		index = A.y*WIDTH + col;
 		if (zbuffer[index] < z) {
-			pixels[index] = coul;
+			pixels[index] = c;
 			zbuffer[index] = z;
 		}
 	}
 }
 
-void triangle(Pointi A, Pointi B, Pointi C, Color c, std::vector<Color> &pixels, std::vector<float> &zbuffer) {
-	segment(A, B, c, pixels, zbuffer);
-	segment(B, C, c, pixels, zbuffer);
-	segment(A, C, c, pixels, zbuffer);
-}
 
+void trianglePlein(std::vector<Pointi> pts, std::vector<Color> cols, std::vector<Color> &pixels, std::vector<float> &zbuffer) {
 
-void trianglePlein(Pointi A, Pointi B, Pointi C, Color coul, std::vector<Color> &pixels, std::vector<float> &zbuffer) {
-	
-	if (A.y > B.y) std::swap(A,B);
-	if (B.y > C.y) std::swap(B,C);
-	if (A.y > B.y) std::swap(A,B);
+	Pointi A = pts[0], B = pts[1], C = pts[2];
+	//if (A.y == B.y && A.y == C.y) return;
+	Color coulA = cols[0], coulB = cols[1], coulC = cols[2];
+	if (A.y > B.y) { std::swap(A,B); std::swap(coulA,coulB); }
+	if (B.y > C.y) { std::swap(B,C); std::swap(coulB,coulC); }
+	if (A.y > B.y) { std::swap(A,B); std::swap(coulA,coulB); }
 
 	Pointi AB = {B.x - A.x, B.y - A.y, B.z - A.z}; 
 	Pointi AC = {C.x - A.x, C.y - A.y, C.z - A.z};
@@ -50,6 +49,7 @@ void trianglePlein(Pointi A, Pointi B, Pointi C, Color coul, std::vector<Color> 
 
 	float alpha, beta, gamma;
 	int index;
+	Color coulG, coulD;
 	if (AB.y > 0) {
 		for (int l=0; l <= AB.y; l++) {
 			alpha = (float)l / (float)AB.y;
@@ -63,10 +63,13 @@ void trianglePlein(Pointi A, Pointi B, Pointi C, Color coul, std::vector<Color> 
 			pAC.y = pAB.y;
 			pAC.z = A.z + beta * (C.z - A.z);
 
-			segment(pAB, pAC, coul, pixels, zbuffer);
+			coulG = (1-alpha)*coulA + alpha*coulB;
+			coulD = (1-beta)*coulA + beta*coulC;
+			
+			segment(pAB, pAC, coulG, coulD, pixels, zbuffer);
 		}
 	} else {
-		segment(A, B, coul, pixels, zbuffer);
+		segment(A, B, coulA, coulB, pixels, zbuffer);
 	}
 
 	if (BC.y > 0) {
@@ -81,11 +84,14 @@ void trianglePlein(Pointi A, Pointi B, Pointi C, Color coul, std::vector<Color> 
 			pAC.x = A.x + AC.x * l / AC.y;
 			pAC.y = pBC.y;
 			pAC.z = A.z + beta * (C.z - A.z);
+			
+			coulG = (1-alpha)*coulB + alpha*coulC;
+			coulD = (1-beta)*coulA + beta*coulC;
 
-			segment(pBC, pAC, coul, pixels, zbuffer);
+			segment(pBC, pAC, coulG, coulD, pixels, zbuffer);
 		}
 	} else {
-		segment(B, C, coul, pixels, zbuffer);
+		segment(B, C, coulB, coulC, pixels, zbuffer);
 	}
 }
 
@@ -137,7 +143,10 @@ Pointi pointToPointi(Point p, float d) {
 }
 
 
+
+
 void render(Model m) {
+	int NB_PT = 3;
     
     Color black = {0, 0, 0, 0};
     Color white = {255,255 ,255, 0};
@@ -176,41 +185,33 @@ void render(Model m) {
     Pointi p9 = {300,300,60};
 	
 	trianglePlein(p4, p5, p6, vert, pixels, zBuffer);
-	trianglePlein(p1, p2, p3, rouge, pixels, zBuffer);*/
+	trianglePlein(p1, p2, p3, rouge, vert, bleu, pixels, zBuffer); */
 	
 	//trianglePlein(p7, p8, p9, bleu, pixels, zBuffer);
 	
 	// int delta = 20; 	
+	std::vector<float> intensites(NB_PT);
+	std::vector<Point> points_modele(NB_PT);
+	std::vector<Pointi> points_ecran(NB_PT);
+	std::vector<Color> couleurs(NB_PT);
 	for (int nface = 0; nface < m.nbfaces(); nface++) {
-		Point p1 = m.point(m.vert(nface, 0));
-		Point p2 = m.point(m.vert(nface, 1));
-		Point p3 = m.point(m.vert(nface, 2));
 		
-		/*Pointi p1i = pointToPointi(p1, -delta);
-		Pointi p2i = pointToPointi(p2, -delta);
-		Pointi p3i = pointToPointi(p3, -delta);*/
-		
-		Pointi p1i = pointToPointi(p1);
-		Pointi p2i = pointToPointi(p2);
-		Pointi p3i = pointToPointi(p3);
-		
-		/*Point p12 = {p2.x - p1.x, p2.y - p1.y, p2.z - p1.z}; //vecteur AB
-		Point p13 = {p3.x - p1.x, p3.y - p1.y, p3.z - p1.z};
-		Point p23 = {p3.x - p2.x, p3.y - p2.y, p3.z - p2.z};*/
-		
-		//Calcul qui est fait pour P1 ^ P2 : 
-		//template <typename T> vec<3,T> operator ^(vec<3,T> v1, vec<3,T> v2) { return vec<3,T>(v1.y*v2.z-v1.z*v2.y, v1.z*v2.x-v1.x*v2.z, v1.x*v2.y-v1.y*v2.x); }
-		Point normale = (p3 - p1)^(p2 - p1);
-		normale.normalize();
+		Point normale = (points_modele[2] - points_modele[0])^(points_modele[1] - points_modele[0]);
+		normale.normalize();		
 		float intensite = normale*dir_lum;
+	 
 		Color coul = white;
-		/*Color coulR = rouge;
-		Color coulB = bleu;*/
+		
+		for (int i = 0; i < NB_PT; i++) {
+			points_modele[i] = m.point(m.vert(nface, i));
+			points_ecran[i] = pointToPointi(points_modele[i]);
+			intensites[i] = -(m.normal(nface, i) * dir_lum);
+			couleurs[i] = coul*intensites[i];
+		}
+		
+		// if (intensites[0] > 0 && intensites[1] > 0 && intensites[2] > 0) {
 		if (intensite > 0) {
-			coul = {intensite*white.r, intensite*white.g, intensite*white.b, 0};
-			/*coulR = {intensite*rouge.r, intensite*rouge.g, intensite*rouge.b, 0};
-			coulB = {intensite*bleu.r, intensite*bleu.g, intensite*bleu.b, 0};*/
-			trianglePlein(p1i, p2i, p3i, coul, pixels, zBuffer);
+			trianglePlein(points_ecran, couleurs, pixels, zBuffer);
 		}
 		
 		
