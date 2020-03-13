@@ -185,17 +185,10 @@ void render(Model m) {
 
 
 int main(int argc, char** argv) {
-    cout << "Usage: " << argv[0] << " model.obj tangentnormals.jpg diffuse.jpg specular.jpg" << endl;
     string file_obj ("../lib/obj/diablo3_pose/diablo3_pose.obj");
     string file_nm  ("../lib/obj/diablo3_pose/diablo3_pose_nm_tangent.tga");
     string file_diff("../lib/obj/diablo3_pose/diablo3_pose_diffuse.tga");
     string file_spec("../lib/obj/diablo3_pose/diablo3_pose_spec.tga");
-    if (5==argc) {
-        file_obj  = std::string(argv[1]);
-        file_nm   = std::string(argv[2]);
-        file_diff = std::string(argv[3]);
-        file_spec = std::string(argv[4]);
-    }
     Model model(file_obj.c_str());
     cout << "Number of points in the model: " << model.nbvertex() << " Number of faces in the model " << model.nbfaces() << endl;
     render(model);

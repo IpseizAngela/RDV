@@ -1,6 +1,4 @@
-//
-// Created by Dylanlicho on 30/01/2020.
-//
+
 #include <iostream>
 #include <cassert>
 #include <fstream>
@@ -58,12 +56,12 @@ Point &Model::point(int i) {
     return vertex[i];
 }
 
-int Model::vert(int fi, int li) {
-    assert(fi>=0 && fi<nbfaces() && li>=0 && li<3);
-    return faces[fi][li].x;
+int Model::vert(int numFace, int numPoint) {
+    assert(numFace >= 0 && numFace < nbfaces() && numPoint >= 0 && numPoint < 3);
+    return faces[numFace][numPoint].x;
 }
 
-Point Model::normal(int fi, int li) {
-    assert(fi>=0 && fi<nbfaces() && li>=0 && li<3);
-    return norms[faces[fi][li].z];
+Point Model::normal(int numFace, int numPoint) {
+    assert(numFace >= 0 && numFace < nbfaces() && numPoint >= 0 && numPoint < 3);
+    return norms[faces[numFace][numPoint].z];
 }
