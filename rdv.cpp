@@ -43,6 +43,20 @@ Matrix viewport(int x, int y, int w, int h) {
     return m;
 }
 
+Matrix lookat(Point eye, Point center, Point up) {
+    Point z = (eye-center).normalize();
+    Point x = cross(up,z).normalize();
+    Point y = cross(z,x).normalize();
+    Matrix Minv = Matrix::identity(4);
+    Matrix Tr   = Matrix::identity(4);
+    for (int i=0; i<3; i++) {
+        Minv[0][i] = x[i];
+        Minv[1][i] = y[i];
+        Minv[2][i] = z[i];
+        Tr[i][3] = -center[i];
+    }
+    return Minv*Tr;
+}
 
 void segment(Pointi A, Pointi B, float coulA, float coulB, std::vector<Color> &pixels, std::vector<float> &zbuffer)
 {
@@ -173,36 +187,56 @@ void render(Model m) {
 	col_diablo = blanc;
 	Matrix proj = Matrix::identity(4);
 	Matrix view = viewport(WIDTH/8, HEIGHT/8, WIDTH*3/4, HEIGHT*3/4);
+
+	Point eye = {camera.x, camera.y, 0};
+	Point center = {0, 0, 10};
+	Point up = {eye.x,eye.y+camera.z,eye.z};
+	Matrix look = lookat(eye, center, up);
 	proj[3][2] = -1.f/camera.z;
 	
+	Point eyeR = {camera.x - (dcam/2.f), camera.y, 0};
+	Point eyeB = {camera.x + (dcam/2.f), camera.y, 0};
+	Matrix lookR = lookat(eyeR, center, up);
+	Matrix lookB = lookat(eyeB, center, up);
 	
-	std::vector<Color> pixels(TAILLE);
-	std::vector<float> zBuffer(TAILLE);
+	
+	std::vector<Color> pixels(TAILLE),pixelsR(TAILLE),pixelsB(TAILLE);
+	std::vector<float> zBufferR(TAILLE), zBufferB(TAILLE);
 	
 	std::vector<float> intensites(NB_PT);
 	std::vector<Point> points_modele(NB_PT);
-	std::vector<Pointi> points_ecran(NB_PT);
+	std::vector<Pointi> points_ecranR(NB_PT), points_ecranB(NB_PT);
 	
     for (size_t i = 0; i < TAILLE; ++i) {
-        pixels[i] = noir;
-		zBuffer[i] = -TAILLE*1000;
+        pixelsR[i] = noir;
+        pixelsB[i] = noir;
+		zBufferR[i] = -TAILLE*1000;
+        zBufferB[i] = -TAILLE*1000;
     }
 	
 	int delta = 15; 	
 	for (int nface = 0; nface < m.nbfaces(); nface++) {
 		for (int i = 0; i < NB_PT; i++) {
 			points_modele[i] = m.point(m.vert(nface, i));
-			points_ecran[i] = mat2pt(view*proj*pt2mat(points_modele[i]));
+			// points_ecranR[i] = mat2pt(view*proj*lookR*pt2mat(points_modele[i]));
+			points_ecranB[i] = mat2pt(view*proj*lookB*pt2mat(points_modele[i]));
+			points_ecranR[i] = mat2pt(view*proj*look*pt2mat(points_modele[i]));
 			intensites[i] = -(m.normal(nface, i) * dir_lum);
 		}
 		
-		trianglePlein(points_ecran, intensites, pixels, zBuffer);
+		trianglePlein(points_ecranR, intensites, pixelsR, zBufferR);
+		trianglePlein(points_ecranB, intensites, pixelsB, zBufferB);
 	}
+    
+	for (size_t i = 0; i < WIDTH*HEIGHT; i++) {
+        Color coulfinale = {(pixelsR[i].r+pixelsR[i].g+pixelsR[i].b)/3, 0, (pixelsB[i].r+pixelsB[i].g+pixelsB[i].b)/3, 0};
+        pixels[i] = coulfinale;
+    }
     
     std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {
         for (size_t j = 0; j<3; j++) {
-            pixmap[i*3+j] = (unsigned char) pixels[i][j];
+            pixmap[i*3+j] = (unsigned char) pixelsR[i][j];
         }
     }
     writeppm(pixmap.data(), "test1.ppm");
@@ -210,10 +244,17 @@ void render(Model m) {
 
 
 int main(int argc, char** argv) {
+    cout << "Usage: " << argv[0] << " model.obj tangentnormals.jpg diffuse.jpg specular.jpg" << endl;
     string file_obj ("../lib/obj/diablo3_pose/diablo3_pose.obj");
     string file_nm  ("../lib/obj/diablo3_pose/diablo3_pose_nm_tangent.tga");
     string file_diff("../lib/obj/diablo3_pose/diablo3_pose_diffuse.tga");
     string file_spec("../lib/obj/diablo3_pose/diablo3_pose_spec.tga");
+    if (5==argc) {
+        file_obj  = std::string(argv[1]);
+        file_nm   = std::string(argv[2]);
+        file_diff = std::string(argv[3]);
+        file_spec = std::string(argv[4]);
+    }
     Model model(file_obj.c_str());
     cout << "Number of points in the model: " << model.nbvertex() << " Number of faces in the model " << model.nbfaces() << endl;
     render(model);
