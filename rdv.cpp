@@ -4,6 +4,7 @@
 #include <vector>
 #include "data.hpp"
 #include "model.h"
+#include "matrix.h"
 
 #define WIDTH 800
 #define HEIGHT 800
@@ -11,9 +12,37 @@
 
 
 Point dir_lum = {0, 0, -1};
+Point camera(0,0,3);
 Color col_diablo;
 
 using namespace std;
+
+Pointi mat2pt(Matrix m) {
+    Pointi p = {(int)(m[0][0]/m[3][0]), (int)(m[1][0]/m[3][0]), (int)(m[2][0]/m[3][0])};
+	return p;
+}
+
+Matrix pt2mat(Point v) {
+    Matrix m(4, 1);
+    m[0][0] = v.x;
+    m[1][0] = v.y;
+    m[2][0] = v.z;
+    m[3][0] = 1.f;
+    return m;
+}
+
+Matrix viewport(int x, int y, int w, int h) {
+    Matrix m = Matrix::identity(4);
+    m[0][3] = x+w/2.f;
+    m[1][3] = y+h/2.f;
+    m[2][3] = PROF/2.f;
+
+    m[0][0] = w/2.f;
+    m[1][1] = h/2.f;
+    m[2][2] = PROF/2.f;
+    return m;
+}
+
 
 void segment(Pointi A, Pointi B, float coulA, float coulB, std::vector<Color> &pixels, std::vector<float> &zbuffer)
 {
@@ -34,7 +63,7 @@ void segment(Pointi A, Pointi B, float coulA, float coulB, std::vector<Color> &p
 			c = col_diablo*i; 
 			index = A.y*WIDTH + col;
 			if (zbuffer[index] < z) {
-				pixels[index] = c;
+				pixels[(HEIGHT-A.y)*WIDTH + col] = c;
 				zbuffer[index] = z;
 			}
 		}
@@ -137,42 +166,38 @@ Pointi pointToPointi(Point p, float d) {
 void render(Model m) {
 	int NB_PT = 3;
 	int TAILLE = WIDTH*HEIGHT;
+	float dcam = .2;
     
     Color blanc = {255,255 ,255, 0};
     Color noir = {0, 0, 0, 0};
 	col_diablo = blanc;
+	Matrix proj = Matrix::identity(4);
+	Matrix view = viewport(WIDTH/8, HEIGHT/8, WIDTH*3/4, HEIGHT*3/4);
+	proj[3][2] = -1.f/camera.z;
 	
-	std::vector<Color> pixels(TAILLE),pixelsR(TAILLE),pixelsB(TAILLE);
-	std::vector<float> zBufferR(TAILLE), zBufferB(TAILLE);
+	
+	std::vector<Color> pixels(TAILLE);
+	std::vector<float> zBuffer(TAILLE);
 	
 	std::vector<float> intensites(NB_PT);
 	std::vector<Point> points_modele(NB_PT);
-	std::vector<Pointi> points_ecranR(NB_PT), points_ecranB(NB_PT);
+	std::vector<Pointi> points_ecran(NB_PT);
 	
     for (size_t i = 0; i < TAILLE; ++i) {
-        pixelsR[i] = noir;
-        pixelsB[i] = noir;
-		zBufferR[i] = -TAILLE*1000;
-        zBufferB[i] = -TAILLE*1000;
+        pixels[i] = noir;
+		zBuffer[i] = -TAILLE*1000;
     }
 	
-	int delta = 10; 	
+	int delta = 15; 	
 	for (int nface = 0; nface < m.nbfaces(); nface++) {
 		for (int i = 0; i < NB_PT; i++) {
 			points_modele[i] = m.point(m.vert(nface, i));
-			points_ecranR[i] = pointToPointi(points_modele[i], - delta);
-			points_ecranB[i] = pointToPointi(points_modele[i], delta);
+			points_ecran[i] = mat2pt(view*proj*pt2mat(points_modele[i]));
 			intensites[i] = -(m.normal(nface, i) * dir_lum);
 		}
 		
-		trianglePlein(points_ecranR, intensites, pixelsR, zBufferR);
-		trianglePlein(points_ecranB, intensites, pixelsB, zBufferB);
+		trianglePlein(points_ecran, intensites, pixels, zBuffer);
 	}
-    
-	for (size_t i = 0; i < WIDTH*HEIGHT; i++) {
-        Color coulfinale = {(pixelsR[i].r+pixelsR[i].g+pixelsR[i].b)/3, 0, (pixelsB[i].r+pixelsB[i].g+pixelsB[i].b)/3, 0};
-        pixels[i] = coulfinale;
-    }
     
     std::vector<unsigned char> pixmap(WIDTH*HEIGHT*3);
     for (size_t i = 0; i < HEIGHT*WIDTH; ++i) {

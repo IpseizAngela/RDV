@@ -1,3 +1,7 @@
+//
+// Created by Dylanlicho on 30/01/2020.
+//
+
 #ifndef PROJETRDV_MODEL_H
 #define PROJETRDV_MODEL_H
 
@@ -15,9 +19,8 @@ public:
     int nbvertex();
     int nbfaces();
     Point &point(int i);
-    int vert(int numFace, int numPoint);
-    Point normal(int numFace, int numPoint);
-
+    int vert(int fi, int li);
+    Point normal(int fi, int li);
 };
 
 
