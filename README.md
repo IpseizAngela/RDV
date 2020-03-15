@@ -1,5 +1,9 @@
 # RDV
-## Programmeurs 
+
+Le but du projet est de réalier un affichage du modèle en utilisant la méthode de la rasterisation et en faire un anaglyphe.
+Ce projet contient l'affichage d'un modèle texturé et lissé.
+
+## Programmers 
 	- Angela Ipseiz 
 	- Dylan Li-Cho
 
