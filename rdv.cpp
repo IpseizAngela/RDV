@@ -242,7 +242,7 @@ void render(Model m) {
         }
     }
 	
-    writeppm(pixmap.data(), "test1.ppm");
+    writeppm(pixmap.data(), "anaglyphe.ppm");
 }
 
 
