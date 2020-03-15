@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <math.h>
 #include <vector>
+#include <cstring>
 #include "data.hpp"
 #include "model.h"
 #include "matrix.h"
@@ -16,6 +17,8 @@
 Point dir_lum = {0, 0, -1};
 Point cam(0,0,3);
 Color col_diablo;
+TGAImage texture;
+bool isDiffuse;
 
 
 using namespace std;
@@ -61,23 +64,30 @@ Matrix lookat(Point eye, Point center, Point up) {
     return Minv*Tr;
 }
 
-void segment(Pointi A, Pointi B, float coulA, float coulB, std::vector<Color> &pixels, std::vector<float> &zbuffer)
+void segment(Pointi A, Pointi B, float inA, float inB, Point2d ctA, Point2d ctB, std::vector<Color> &pixels, std::vector<float> &zbuffer)
 {
 	float i, z, gamma;
 	int index;
+	Point2d ctP;
 	Color c;
+	TGAColor tgac;
 	
 	if (A.x > B.x) { 
 		std::swap(A, B);  
-		std::swap(coulA, coulB); 
+		std::swap(inA, inB); 
+		std::swap(ctA, ctB); 
 	}
 	
 	for(int col = A.x; col <= B.x; col++) {
 		gamma = B.x==A.x ? 1. : (float)(col - A.x) / (float)(B.x - A.x);
 		z = A.z + gamma*(B.z - A.z);
-		i = (1-gamma)*coulA + gamma*coulB; 
+		i = (1-gamma)*inA + gamma*inB; 
+		ctP = (1-gamma)*ctA + gamma*ctB; 
+		tgac = texture.get(ctP.x*texture.get_width(),texture.get_height() - (ctP.y*texture.get_height()));
 		if (i > 0) {
-			c = col_diablo*i; 
+			if (isDiffuse) c = {(float)tgac.bgra[2], (float)tgac.bgra[1], (float)tgac.bgra[0], 0};
+			else c = col_diablo;
+			c = c*i; 
 			index = A.y*WIDTH + col;
 			if (zbuffer[index] < z) {
 				pixels[(HEIGHT-A.y)*WIDTH + col] = c;
@@ -88,13 +98,14 @@ void segment(Pointi A, Pointi B, float coulA, float coulB, std::vector<Color> &p
 }
 
 
-void trianglePlein(std::vector<Pointi> pts, std::vector<float> ins, std::vector<Color> &pixels, std::vector<float> &zbuffer) {
+void trianglePlein(std::vector<Pointi> pts, std::vector<Point2d> text,std::vector<float> ins, std::vector<Color> &pixels, std::vector<float> &zbuffer) {
 
 	Pointi A = pts[0], B = pts[1], C = pts[2];
 	float inA = ins[0], inB = ins[1], inC = ins[2];
-	if (A.y > B.y) { std::swap(A,B); std::swap(inA,inB); }
-	if (B.y > C.y) { std::swap(B,C); std::swap(inB,inC); }
-	if (A.y > B.y) { std::swap(A,B); std::swap(inA,inB); }
+	Point2d ctA = text[0], ctB = text[1], ctC = text[2];
+	if (A.y > B.y) { std::swap(A,B); std::swap(inA,inB); std::swap(ctA,ctB); }
+	if (B.y > C.y) { std::swap(B,C); std::swap(inB,inC); std::swap(ctB,ctC); }
+	if (A.y > B.y) { std::swap(A,B); std::swap(inA,inB); std::swap(ctA,ctB); }
 
 	Pointi AB = {B.x - A.x, B.y - A.y, B.z - A.z}; 
 	Pointi AC = {C.x - A.x, C.y - A.y, C.z - A.z};
@@ -103,6 +114,7 @@ void trianglePlein(std::vector<Pointi> pts, std::vector<float> ins, std::vector<
 
 	float alpha, beta, gamma, inG, inD;
 	int index;
+	Point2d ctG, ctD;
 	if (AB.y > 0) {
 		for (int l=0; l <= AB.y; l++) {
 			alpha = (float)l / (float)AB.y;
@@ -118,10 +130,12 @@ void trianglePlein(std::vector<Pointi> pts, std::vector<float> ins, std::vector<
 
 			inG = (1-alpha)*inA + alpha*inB;
 			inD = (1-beta)*inA + beta*inC;
+			ctG = (1-alpha)*ctA + alpha*ctB;
+			ctD = (1-beta)*ctA + beta*ctC;
 			
-			segment(pAB, pAC, inG, inD, pixels, zbuffer);
+			segment(pAB, pAC, inG, inD, ctG, ctD, pixels, zbuffer);
 		}
-	} else segment(A, B, inA, inB, pixels, zbuffer);
+	} else segment(A, B, inA, inB, ctA, ctB, pixels, zbuffer);
 	
 	if (BC.y > 0) {
 		for (int l = AB.y; l <= AC.y; l++) {
@@ -138,10 +152,12 @@ void trianglePlein(std::vector<Pointi> pts, std::vector<float> ins, std::vector<
 			
 			inG = (1-alpha)*inB + alpha*inC;
 			inD = (1-beta)*inA + beta*inC;
+			ctG = (1-alpha)*ctB + alpha*ctC;
+			ctD = (1-beta)*ctA + beta*ctC;
 
-			segment(pBC, pAC, inG, inD, pixels, zbuffer);
+			segment(pBC, pAC, inG, inD, ctG, ctD, pixels, zbuffer);
 		}
-	} else segment(B, C, inB, inC, pixels, zbuffer);
+	} else segment(B, C, inB, inC, ctB, ctC, pixels, zbuffer);
 }
 
 
@@ -199,6 +215,7 @@ std::vector<Color> draw(Point camera, Model m) {
 	std::vector<float> intensites(NB_PT);
 	std::vector<Point> points_modele(NB_PT);
 	std::vector<Pointi> points_ecran(NB_PT);
+	std::vector<Point2d> coord_text(NB_PT);
 	
     for (size_t i = 0; i < TAILLE; ++i) {
         pixels[i] = noir;
@@ -210,9 +227,9 @@ std::vector<Color> draw(Point camera, Model m) {
 			points_modele[i] = m.point(m.vert(nface, i));
 			points_ecran[i] = mat2pt(view*proj*look*pt2mat(points_modele[i]));
 			intensites[i] = -(m.normal(nface, i) * dir_lum);
-			Vec2f pt2d = m.uv(nface, i);
+			coord_text[i] = m.uv(nface, i);
 		}
-		trianglePlein(points_ecran, intensites, pixels, zBuffer);
+		trianglePlein(points_ecran, coord_text, intensites, pixels, zBuffer);
 	}
 	
 	return pixels;
@@ -250,8 +267,14 @@ void render(Model m) {
 
 int main(int argc, char** argv) {
 	string name = "../lib/obj/diablo3_pose/diablo3_pose.obj";
-	if (argc >= 2) name = argv[1];
+	string texture_name = "../lib/obj/diablo3_pose/diablo3_pose_diffuse.tga";
+	if (argc >= 2) {
+		name = argv[1];		
+		texture_name = name.substr(0, name.size() - strlen(".obj"));
+		texture_name = texture_name + "_diffuse.tga";
+	}
     Model model(name.c_str());
+	isDiffuse = texture.read_tga_file(texture_name.c_str());
     cout << "Number of points in the model: " << model.nbvertex() << " Number of faces in the model " << model.nbfaces() << endl;
     render(model);
     return 0;
