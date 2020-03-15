@@ -106,6 +106,7 @@ template <size_t DIM, typename T> std::ostream& operator<<(std::ostream& out, ve
 
 typedef vec<3,  float> Point;
 typedef vec<3,  int>   Pointi;
+typedef vec<2,  float>   Vec2f;
 typedef vec<4,  float>   Color;
 
 

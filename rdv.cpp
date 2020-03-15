@@ -209,6 +209,7 @@ std::vector<Color> draw(Point camera, Model m) {
 			points_modele[i] = m.point(m.vert(nface, i));
 			points_ecran[i] = mat2pt(view*proj*look*pt2mat(points_modele[i]));
 			intensites[i] = -(m.normal(nface, i) * dir_lum);
+			Vec2f pt2d = m.uv(nface, i);
 		}
 		trianglePlein(points_ecran, intensites, pixels, zBuffer);
 	}
@@ -247,11 +248,9 @@ void render(Model m) {
 
 
 int main(int argc, char** argv) {
-    string file_obj ("../lib/obj/diablo3_pose/diablo3_pose.obj");
-    string file_nm  ("../lib/obj/diablo3_pose/diablo3_pose_nm_tangent.tga");
-    string file_diff("../lib/obj/diablo3_pose/diablo3_pose_diffuse.tga");
-    string file_spec("../lib/obj/diablo3_pose/diablo3_pose_spec.tga");
-    Model model(file_obj.c_str());
+	string name = "../lib/obj/diablo3_pose/diablo3_pose.obj";
+	if (argc >= 2) name = argv[1];
+    Model model(name.c_str());
     cout << "Number of points in the model: " << model.nbvertex() << " Number of faces in the model " << model.nbfaces() << endl;
     render(model);
     return 0;

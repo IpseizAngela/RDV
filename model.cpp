@@ -27,6 +27,11 @@ Model::Model(const char *filename) : vertex(), faces(){
             Point n;
             for (int i=0;i<3;i++) cur >> n[i];
             norms.push_back(n);
+		}else if (!line.compare(0, 3, "vt ")) {
+            cur >> trash >> trash;
+            Vec2f uv;
+            for (int i=0;i<2;i++) cur >> uv[i];
+            texcoords.push_back(uv);
         }else if (!line.compare(0, 2, "f ")) {
             std::vector<Pointi> f;
             Pointi tmp;
@@ -59,6 +64,11 @@ Point &Model::point(int i) {
 int Model::vert(int numFace, int numPoint) {
     assert(numFace >= 0 && numFace < nbfaces() && numPoint >= 0 && numPoint < 3);
     return faces[numFace][numPoint].x;
+}
+
+Vec2f Model::uv(int numFace, int numPoint) {
+    assert(numFace>=0 && numFace<nbfaces() && numPoint>=0 && numPoint<3);
+    return texcoords[faces[numFace][numPoint].y];
 }
 
 Point Model::normal(int numFace, int numPoint) {
