@@ -5,6 +5,7 @@
 #include "data.hpp"
 #include "model.h"
 #include "matrix.h"
+#include "tgaimage.h"
 
 #define WIDTH 800
 #define HEIGHT 800

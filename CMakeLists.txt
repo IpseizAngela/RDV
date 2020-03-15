@@ -4,4 +4,4 @@ project(rasterisation)
 set(CMAKE_CXX_STANDARD 14)
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
-add_executable(rasterisation rdv.cpp model.cpp model.h data.hpp matrix.h matrix.cpp)
+add_executable(rasterisation rdv.cpp model.cpp model.h data.hpp matrix.h matrix.cpp tgaimage.cpp tgaimage.h)
