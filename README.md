@@ -1,9 +1,9 @@
 # RDV
-##Programmeurs 
+## Programmeurs 
 	- Angela Ipseiz 
 	- Dylan Li-Cho
 
-##Compiling
+## Compiling
 	```bash
 	clone git https://github.com/IpseizAngela/RDV.git 
 	cd RDV 
@@ -12,6 +12,6 @@
 	make
 	```
 
-##Execution 
+## Execution 
 	./rastérisation [object_name.obj]
 	Le résultat se trouve dans build/anaglyphe.ppm
